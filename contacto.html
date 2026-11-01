@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ortesis&Protesis</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/contacto.css">
+</head>
+
+<body>
+    <header>
+        <h3>Ortesis&Protesis</h3>
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+        <label for="menu-toggle" class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav>
+            <ul>
+                <li><a class="nav-link" href="index.html">Inicio</a></li>
+                <li><a class="nav-link" href="productos.html">Productos</a></li>
+                <li><a class="nav-link" href="nosotros.html">Nosotros</a></li>
+            </ul>
+        </nav>
+
+        <a href="#" class="nav-link button" id="">Contacto</a>
+    </header>
+
+    <section class="cta-banner">
+        <div class="blur-button">
+            <div></div>
+            <p>Atención personalizada & clínica biomédica</p>
+        </div>
+        <h1>Agenda tu evaluación</h2>
+            <p>Da el primer paso hacia una movilidad sin limitaciones. Nuestro equipo
+                multidisciplinario de protesistas y ortopedistas evaluará tu caso de forma individualizada.</p>
+            <div class="cta-beneficios">
+                <span>Diagnóstico biomédico inicial sin costo</span>
+                <span>•</span>
+                <span>Atención a pacientes de toda la República</span>
+                <span>•</span>
+                <span>Convenios con principales aseguradoras</span>
+            </div>
+    </section>
+
+    <section class="formulario">
+        <div class="container">
+
+            <div class="form">
+                <div class="encabezado">
+                    <h3>Solicitud de valoración clínica</h3>
+                    <p>Completa el formulario para reservar tu turno en el laboratorio de escaneo 3D.</p>
+                    <span>Respuesta en < 2 horas</span>
+                </div>
+                <div>
+           
+                    <form action="" method="POST">
+                        
+                        <div class="inputs">
+                            <label for="nombre">Nombre Completo</label>
+                            <input type="text" id="nombre" name="nombre" placeholder="Ej. Guillermo" required>
+                        </div>
+
+                        <div class="fila-inputs">
+                            <div class="inputs">
+                                <label for="correo">Correo electrónico</label>
+                                <input type="email" id="correo" name="correo" placeholder="Ej. Guillermo@gmail.com" required>
+                            </div>
+                            <div class="inputs">
+                                <label for="telefono">Teléfono de contacto</label>
+                                <input type="tel" id="telefono" name="telefono" placeholder="7676 9090" required>
+                            </div>
+                        </div>
+
+                        <div class="fila-inputs">
+                            <div class="inputs">
+                                <label for="tipo_solicitud">Tipo de solicitud</label>
+                                <select id="tipo_solicitud" name="tipo_solicitud" required>
+                                    <option value="" selected disabled>Selecciona una opción</option>
+                                    <option value="1">Conusulta de medidas</option>
+                                    <option value="2">Consulta con especialista</option>
+                                    <option value="3">Consulta de precios</option>
+                                </select>
+                            </div>
+                            <div class="inputs">
+                                <label for="fecha_cita">Fecha preferida de cita</label>
+                                <input type="date" id="fecha_cita" name="fecha_cita" required>
+                            </div>
+                        </div>
+
+                        <div class="inputs">
+                            <label for="motivo">Motivo de consulta o diagnóstico previo</label>
+                            <textarea id="motivo" name="motivo" rows="4"></textarea>
+                        </div>
+
+                        <button type="submit">Enviar solicitud de cita</button>
+                    </form>
+                    <span></span>
+                </div>
+            </div>
+
+            <div class="info-form">
+                <div>
+                    <p>SEDE PRINCIPAL</p>
+                    <h3>Centro Clínico de Adaptación OrtoVida</h3>
+                </div>
+                <div>
+                    <h6>Dirección Clínica</h6>
+                    <p>Av. Revolución Médica 1420, Consultorio 402, Torre de Especialidades, Benito Juárez, 03100, Ciudad de México</p>
+                </div>
+                <div>
+                    <h6>Líneas Directas & Urgencias</h6>
+                    <p>WhatsApp Especialistas: +52 (55) 8432-9001</p>
+                </div>
+                <div>
+                    <h6>Correos Electrónicos</h6>
+                    <p>Citas: citas@ortovida.mx</p>
+                </div>
+                <div>
+                    <h6>Horarios de Atención</h6>
+                    <p>Lunes a Viernes de 07:30 a.m. - 5:30 p.m.</p>
+                    <p>Sabados 7:30 am - 12:30 p.m. </p>
+                </div>
+                <div>
+                    <h6>Accesibilidad Total</h6>
+                    <p>Estacionamiento privado con elevador camillero, acceso para sillas de ruedas y rampas ortopédicas de baja pendiente.</p>
+                </div>
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d62017.72610389968!2d-89.27735395136718!3d13.711915400000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f63310952198483%3A0xbe23438e7cc1a178!2sOrtesis%20y%20Pr%C3%B3tesis%20de%20El%20Salvador!5e0!3m2!1ses!2ssv!4v1790892753032!5m2!1ses!2ssv"
+                    width="424" height="200" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="faq" class="faq">
+        <div class="faq-encabezado">
+            <p class="faq-etiqueta"><span class="faq-punto"></span>Resolución de dudas</p>
+            <h2>Preguntas frecuentes sobre tu primera cita</h2>
+            <p class="faq-subtitulo">Conoce el protocolo clínico para que tu visita sea cómoda,
+                precisa y resolutiva desde el primer minuto.</p>
+        </div>
+
+        <div class="faq-grid">
+
+            <article class="faq-card">
+                <div class="faq-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2" />
+                        <circle cx="12" cy="12" r="2.5" />
+                        <path d="M6 12h.01M18 12h.01" />
+                    </svg>
+                </div>
+                <h3>¿Tiene costo la primera evaluación diagnóstica?</h3>
+                <p>No, la valoración biomecánica inicial y el escaneo óptico 3D de diagnóstico
+                    se realizan sin costo ni compromiso para que conozcas la solución óptima a tu medida.</p>
+                <p class="faq-chip">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+                    </svg>
+                    Evaluación 100% gratuita
+                </p>
+            </article>
+
+            <article class="faq-card">
+                <div class="faq-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="4" width="14" height="17" rx="2" />
+                        <path d="M9 4h6v3H9zM9 12h6M9 16h4" />
+                    </svg>
+                </div>
+                <h3>¿Qué debo llevar el día de mi valoración presencial?</h3>
+                <p>Recomendamos asistir con ropa cómoda que permita evaluar la articulación o
+                    muñón, estudios radiológicos o resonancias previas si cuentas con ellos, y tu
+                    prótesis u órtesis anterior en caso de renovación. No olvides traer tu DUI.</p>
+                <p class="faq-chip">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    </svg>
+                    Expediente clínico o estudios
+                </p>
+            </article>
+
+            <article class="faq-card">
+                <div class="faq-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 10 12 4l9 6M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18" />
+                    </svg>
+                </div>
+                <h3>¿Aceptan seguros médicos y pagos en cuotas?</h3>
+                <p>Sí, trabajamos con las principales aseguradoras del país (como ASESUISA,
+                    Mapfre y SISA) y te ayudamos con los documentos para tu reembolso. También
+                    ofrecemos pagos en cuotas sin intereses con tarjetas de crédito participantes.</p>
+                <p class="faq-chip">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 10h18" />
+                    </svg>
+                    Seguros y cuotas sin intereses
+                </p>
+            </article>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+
+        <div class="footer-brand">
+            <h3>Orteis&Protesis</h3>
+
+            <p>
+                Especialistas en soluciones ortopédicas de precisión y prótesis
+                biónicas de vanguardia.
+            </p>
+
+            <div class="footer-certified">
+                <span></span>
+                Centro Clínico Certificado
+            </div>
+        </div>
+
+        <div class="footer-column">
+            <h3>NAVEGACIÓN RÁPIDA</h3>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos y Catálogo</a>
+            <a href="#">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-column">
+            <h3>ESPECIALIDADES</h3>
+            <a href="productos.html">Órtesis a Medida</a>
+            <a href="productos.html">Prótesis Avanzadas</a>
+            <a href="productos.html">Rehabilitación Funcional</a>
+            <a href="productos.html">Estudio Biomecánico 3D</a>
+        </div>
+
+        <div class="footer-contact">
+            <h3>ATENCIÓN CLÍNICA</h3>
+
+            <div class="footer-contact-item">
+                <img src="img/footer/direcc.png" alt="direccion">
+
+                <span>21 Av. Norte #1315, Colonia Layco, San Salvador, El Salvador</span>
+            </div>
+
+            <div class="footer-contact-item">
+                <img src="img/footer/telefono.png" alt="icono de teléfono">
+
+                <span>+503 7614-0404</span>
+            </div>
+
+            <div class="footer-contact-item">
+                <img src="img/footer/email.png" alt="icono de teléfono">
+
+                <span>ortesisyprotesis.sv@gmail.com</span>
+            </div>
+
+            <div class="footer-contact-item">
+                <img src="img/footer/reloj.png" alt="">
+
+                <span>Lun - Vie: 08:00 - 19:00 hrs<br>
+                    Sáb: 09:00 - 14:00 hrs</span>
+            </div>
+        </div>
+    </footer>
+    <div class="derechos">
+        <p>© 2026 Ortesis&Protesis S.A. de C.V. Todos los derechos reservados.</p>
+    </div>
+</body>
+
+</html>
