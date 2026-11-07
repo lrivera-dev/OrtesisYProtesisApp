@@ -29,6 +29,7 @@ loginForm.addEventListener("submit", async (event) => {
 
         window.location.assign(destino);
     } catch (error) {
+        await logoutUser().catch(() => { });
         authStatus.textContent =
             "No se pudo iniciar sesión. Revisa tus datos e inténtalo de nuevo.";
         console.error("Error de inicio de sesión:", error);
