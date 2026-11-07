@@ -20,6 +20,12 @@ service cloud.firestore {
         && get(rutaPerfil()).data.role == 'personal';
     }
 
+    function esCliente() {
+      return autenticado()
+        && exists(rutaPerfil())
+        && get(rutaPerfil()).data.role == 'cliente';
+    }
+
     // ---------- Usuarios (módulo de autenticación) ----------
     // Debe coincidir con lo publicado en la consola: revisar con el módulo de auth antes de desplegar.
 
@@ -30,15 +36,30 @@ service cloud.firestore {
       allow create: if autenticado()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['nombre', 'apellido', 'email', 'role', 'createdAt'])
+        && request.resource.data.keys().hasAll(['nombre', 'apellido', 'email', 'role', 'createdAt'])
         && request.resource.data.role == 'cliente'
         && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.nombre.size() <= 100
         && request.resource.data.apellido is string
-        && request.resource.data.email is string;
+        && request.resource.data.apellido.size() > 0
+        && request.resource.data.apellido.size() <= 100
+        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time;
 
-      // Nadie puede cambiarse el rol desde la aplicación.
+      // Solo se permite editar nombres; el rol, correo y fecha de creación quedan protegidos.
       allow update: if autenticado()
         && request.auth.uid == uid
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'createdAt']);
+        && request.resource.data.keys().hasOnly(['nombre', 'apellido', 'email', 'role', 'createdAt'])
+        && request.resource.data.keys().hasAll(['nombre', 'apellido', 'email', 'role', 'createdAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre', 'apellido'])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.nombre.size() <= 100
+        && request.resource.data.apellido is string
+        && request.resource.data.apellido.size() > 0
+        && request.resource.data.apellido.size() <= 100;
 
       allow delete: if false;
     }
@@ -64,6 +85,15 @@ service cloud.firestore {
       }
 
       // Campos que el cliente escribe al crear o editar.
+      function productoSolicitable(productoId, productoNombre) {
+        let rutaProducto = /databases/$(database)/documents/productos/$(productoId);
+        return exists(rutaProducto)
+          && get(rutaProducto).data.nombre == productoNombre
+          && (!('disponible' in get(rutaProducto).data)
+            || (get(rutaProducto).data.disponible is bool
+              && get(rutaProducto).data.disponible == true));
+      }
+
       function camposEditablesValidos(d) {
         return d.tipo in ['producto', 'evaluacion']
           && d.telefono is string
@@ -77,7 +107,7 @@ service cloud.firestore {
           && (
             (d.tipo == 'producto'
               && d.productoId is string
-              && exists(/databases/$(database)/documents/productos/$(d.productoId)))
+              && productoSolicitable(d.productoId, d.productoNombre))
             || (d.tipo == 'evaluacion' && d.productoId == null)
           );
       }
@@ -155,8 +185,7 @@ service cloud.firestore {
         || (autenticado() && resource.data.clienteId == request.auth.uid);
 
       // Creación: solo clientes, a su nombre, siempre en estado inicial y sin notas.
-      allow create: if autenticado()
-        && !esPersonal()
+      allow create: if esCliente()
         && request.resource.data.keys().hasOnly([
           'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
           'telefono', 'descripcion', 'estado', 'notas', 'creadoEn', 'actualizadoEn'])
