@@ -1,0 +1,116 @@
+.acceso-header {
+    justify-content: space-between;
+    padding: 18px max(24px, calc((100% - 1100px) / 2));
+}
+
+.marca,
+.volver {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.acceso-main {
+    width: min(100% - 32px, 500px);
+    margin: 64px auto 100px;
+}
+
+.auth-card {
+    padding: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-neutral);
+    box-shadow: 0 12px 36px rgb(7 7 9 / 6%);
+}
+
+.etiqueta {
+    color: var(--color-tertiary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.auth-card h1 {
+    margin: 12px 0;
+    font-size: clamp(2rem, 5vw, 3rem) !important;
+}
+
+.auth-card>p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.auth-card form {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.auth-card label {
+    margin-top: 8px;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.auth-card input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+    font: inherit;
+}
+
+.auth-card input:focus {
+    outline: 2px solid var(--color-tertiary);
+    outline-offset: 2px;
+}
+
+.auth-card button {
+    min-height: 48px;
+    margin-top: 14px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-neutral);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.auth-card button:hover {
+    background: var(--color-tertiary);
+}
+
+.auth-status {
+    min-height: 24px;
+    margin: 12px 0;
+    color: var(--color-danger);
+    font-size: 0.95rem;
+}
+
+.auth-link {
+    margin-top: 22px;
+    text-align: center;
+}
+
+.auth-link a {
+    color: var(--color-tertiary);
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .acceso-header {
+        padding: 16px;
+    }
+
+    .acceso-main {
+        margin-top: 36px;
+    }
+
+    .auth-card {
+        padding: 24px;
+    }
+}
