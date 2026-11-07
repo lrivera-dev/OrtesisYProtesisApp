@@ -69,6 +69,22 @@ La versión actual del sitio estático puede abrirse en un navegador. Para ejecu
 
 > Las instrucciones definitivas, configuración requerida y credenciales de demostración se añadirán cuando la integración esté lista.
 
+## Módulo de solicitudes y seguimiento
+
+- `mis-solicitudes.html` — vista del cliente: formulario para crear/editar solicitudes y "Mis solicitudes" (filtro por estado, orden por fecha, conteo de pendientes, cancelar y eliminar cuando el estado lo permite). Acepta `?producto=ID` para llegar con un producto preseleccionado desde el catálogo.
+- `panel-personal.html` — vista del personal: indicadores por estado, búsqueda, filtros y orden, cambio de estado según el flujo del taller y notas de seguimiento visibles para el cliente.
+- `js/mis-solicitudes.js` y `js/panel-personal.js` — protegen la página por rol (`protegerPagina`, `configurarCerrarSesion`) e inician cada vista.
+- `js/solicitudes/` — `estados.js` (flujo y reglas de negocio), `validaciones.js`, `procesamiento.js` (búsqueda, filtros, orden e indicadores), `solicitudes-datos.js` (servicio de Firestore: cada función devuelve `{ exito, data }` o `{ exito: false, error }`), `sesion.js` (usuario y perfil), `ui-comun.js`, `vista-cliente.js` y `vista-personal.js` (interfaz).
+- `firestore.rules` — reglas de `usuarios`, `productos` (provisionales) y `solicitudes`.
+
+Documento `solicitudes/{id}`: `clienteId`, `clienteNombre`, `clienteEmail`, `tipo` (`producto` | `evaluacion`), `productoId`, `productoNombre`, `telefono`, `descripcion`, `estado`, `notas` (lista de `{ texto, autor, estado, fecha }`), `creadoEn`, `actualizadoEn`.
+
+Flujo del personal: `Pendiente de revisión → En revisión → Requiere información / Aprobada / Rechazada → En desarrollo → Lista para entrega → Completada`. Al pasar a `Requiere información` la nota es obligatoria; cuando el cliente edita su solicitud vuelve a `Pendiente de revisión`. El cliente solo cancela mientras está `Pendiente de revisión`.
+
+Las reglas verifican además: cada cliente lee y modifica solo sus solicitudes; el estado inicial y los campos se validan al crear; el producto relacionado debe existir; el personal no puede cambiar los datos del cliente ni saltarse estados; las notas solo se agregan (no se editan ni borran); las solicitudes cerradas ya no se modifican. El rol se lee de `usuarios/{uid}.role` (`cliente` o `personal`).
+
+Datos iniciales: si un cliente no tiene solicitudes, "Mis solicitudes" ofrece el botón **Crear solicitudes de ejemplo**, que genera tres solicitudes ficticias a su nombre.
+
 ## Seguridad y datos
 
 - Las reglas de Firestore deben restringir a cada cliente a sus propias solicitudes.
