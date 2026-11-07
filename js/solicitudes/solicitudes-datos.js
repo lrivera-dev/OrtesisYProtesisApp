@@ -1,0 +1,209 @@
+// Servicio de la colección `solicitudes`: crear, consultar (todas, propias y por ID), actualizar y eliminar.
+// Igual que en clase: cada función usa try/catch y devuelve { exito: true, data } o { exito: false, error }.
+// La interfaz no llama a Firestore directamente: usa estas funciones.
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    serverTimestamp,
+    arrayUnion,
+    Timestamp,
+    writeBatch
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { db } from "../firebase.js";
+import { ESTADOS } from "./estados.js";
+import { normalizarTelefono } from "./validaciones.js";
+
+const COLECCION = "solicitudes";
+const COLECCION_PRODUCTOS = "productos";
+const solicitudesRef = collection(db, COLECCION);
+
+function fallo(error) {
+    console.error(error);
+    return { exito: false, error: error.message, codigo: error.code ?? "" };
+}
+
+function mapearDocumentos(snapshot) {
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// Campos que el cliente puede escribir al crear o editar.
+function datosEditables({ tipo, productoId, productoNombre, telefono, descripcion }) {
+    const esProducto = tipo === "producto";
+    return {
+        tipo,
+        productoId: esProducto ? productoId : null,
+        productoNombre: esProducto ? productoNombre : "Evaluación personalizada",
+        telefono: normalizarTelefono(telefono),
+        descripcion: descripcion.trim()
+    };
+}
+
+function nuevaSolicitud(usuario, perfil, datos) {
+    return {
+        clienteId: usuario.uid,
+        clienteNombre: perfil.nombreCompleto,
+        clienteEmail: usuario.email,
+        ...datosEditables(datos),
+        estado: ESTADOS.PENDIENTE,
+        notas: [],
+        creadoEn: serverTimestamp(),
+        actualizadoEn: serverTimestamp()
+    };
+}
+
+// Productos disponibles del catálogo para relacionarlos con la solicitud.
+export async function obtenerProductosDisponibles() {
+    try {
+        const snapshot = await getDocs(collection(db, COLECCION_PRODUCTOS));
+        const data = mapearDocumentos(snapshot)
+            .filter((p) => p.disponible !== false)
+            .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+        return { exito: true, data };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+export async function crearSolicitud(usuario, perfil, datos) {
+    try {
+        const ref = await addDoc(solicitudesRef, nuevaSolicitud(usuario, perfil, datos));
+        return { exito: true, data: { id: ref.id } };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Cliente: el filtro por clienteId es obligatorio; las reglas rechazan consultas más amplias.
+export async function obtenerMisSolicitudes(uid) {
+    try {
+        const consulta = query(solicitudesRef, where("clienteId", "==", uid));
+        return { exito: true, data: mapearDocumentos(await getDocs(consulta)) };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Personal: solo este rol tiene permiso de leer todas.
+export async function obtenerTodasLasSolicitudes() {
+    try {
+        return { exito: true, data: mapearDocumentos(await getDocs(solicitudesRef)) };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Lectura de un solo documento por su ID (se usa antes de editar para trabajar con el estado actual).
+export async function obtenerSolicitudPorId(id) {
+    try {
+        const resultado = await getDoc(doc(db, COLECCION, id));
+        if (!resultado.exists()) {
+            return { exito: false, error: "La solicitud no existe.", codigo: "not-found" };
+        }
+        return { exito: true, data: { id: resultado.id, ...resultado.data() } };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Cliente: edita su solicitud. Si se le había pedido información, vuelve a "Pendiente de revisión".
+export async function actualizarSolicitudCliente(id, datos) {
+    try {
+        await updateDoc(doc(db, COLECCION, id), {
+            ...datosEditables(datos),
+            estado: ESTADOS.PENDIENTE,
+            actualizadoEn: serverTimestamp()
+        });
+        return { exito: true };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+export async function cancelarSolicitud(id) {
+    try {
+        await updateDoc(doc(db, COLECCION, id), {
+            estado: ESTADOS.CANCELADA,
+            actualizadoEn: serverTimestamp()
+        });
+        return { exito: true };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Borrado físico (permanente). Las reglas solo lo permiten en estados sin trabajo del taller.
+export async function eliminarSolicitud(id) {
+    try {
+        await deleteDoc(doc(db, COLECCION, id));
+        return { exito: true };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Personal: cambia el estado y/o agrega una nota de seguimiento al final del historial.
+export async function actualizarSeguimiento(id, { nuevoEstado, nota, autor }) {
+    try {
+        const cambios = {
+            estado: nuevoEstado,
+            actualizadoEn: serverTimestamp()
+        };
+        if (nota) {
+            cambios.notas = arrayUnion({
+                texto: nota.trim(),
+                autor,
+                estado: nuevoEstado,
+                fecha: Timestamp.now()
+            });
+        }
+        await updateDoc(doc(db, COLECCION, id), cambios);
+        return { exito: true };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
+// Datos iniciales: crea solicitudes de ejemplo a nombre del cliente que ha iniciado sesión.
+export async function crearSolicitudesDemo(usuario, perfil, productos) {
+    const ejemplos = [
+        {
+            tipo: "evaluacion",
+            telefono: "7614-0404",
+            descripcion: "Quisiera agendar una evaluación para una órtesis de tobillo después de un esguince."
+        },
+        {
+            tipo: "producto",
+            producto: productos[0],
+            telefono: "2250-1234",
+            descripcion: "Me interesa conocer tiempos de entrega y opciones de ajuste para este producto."
+        },
+        {
+            tipo: "producto",
+            producto: productos[1] ?? productos[0],
+            telefono: "6012-9876",
+            descripcion: "Necesito información sobre la adaptación y las citas de calibración del dispositivo."
+        }
+    ].filter((e) => e.tipo === "evaluacion" || e.producto);
+
+    try {
+        const lote = writeBatch(db);
+        for (const ejemplo of ejemplos) {
+            lote.set(doc(solicitudesRef), nuevaSolicitud(usuario, perfil, {
+                ...ejemplo,
+                productoId: ejemplo.producto?.id,
+                productoNombre: ejemplo.producto?.nombre
+            }));
+        }
+        await lote.commit();
+        return { exito: true, data: { total: ejemplos.length } };
+    } catch (error) {
+        return fallo(error);
+    }
+}

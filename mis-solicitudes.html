@@ -6,18 +6,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis solicitudes | OrtoVida</title>
     <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/solicitudes.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
     <header>
         <h3>Ortesis&Protesis</h3>
-        <a href="#" id="logoutButton" class="nav-link button">Cerrar sesión</a>
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+        <label for="menu-toggle" class="hamburger" aria-label="Abrir menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav>
+            <ul>
+                <li><a class="nav-link" href="index.html">Inicio</a></li>
+                <li><a class="nav-link" href="productos.html">Productos</a></li>
+                <li><a class="nav-link active" href="mis-solicitudes.html" aria-current="page">Mis solicitudes</a></li>
+            </ul>
+        </nav>
+        <div class="sesion">
+            <span class="usuario-correo" id="usuario-correo"></span>
+            <a href="#" id="logoutButton" class="nav-link button">Cerrar sesión</a>
+        </div>
     </header>
 
-    <main>
-        <h1>Mis solicitudes</h1>
-        <p>Esta sección está en construcción.</p>
+    <main class="sol-main">
+        <section class="sol-hero">
+            <p class="sol-etiqueta"><span aria-hidden="true"></span>Seguimiento de solicitudes</p>
+            <h1>Mis solicitudes</h1>
+            <p>Solicita una evaluación o un producto del catálogo y consulta el avance del taller desde tu cuenta.</p>
+        </section>
+
+        <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
+
+        <div id="contenido" class="sol-layout" hidden>
+            <section class="tarjeta form-solicitud" aria-labelledby="titulo-form">
+                <h2 id="titulo-form">Nueva solicitud</h2>
+                <p class="ayuda">Usa datos ficticios: no incluyas diagnósticos ni historiales clínicos.</p>
+
+                <form id="form-solicitud" novalidate>
+                    <fieldset class="campo">
+                        <legend>Tipo de solicitud</legend>
+                        <div class="opciones-tipo">
+                            <label><input type="radio" name="tipo" value="producto" checked> Producto del catálogo</label>
+                            <label><input type="radio" name="tipo" value="evaluacion"> Evaluación personalizada</label>
+                        </div>
+                        <small class="error" id="error-tipo"></small>
+                    </fieldset>
+
+                    <div class="campo" id="campo-producto">
+                        <label for="productoId">Producto</label>
+                        <select id="productoId" name="productoId" aria-describedby="error-productoId">
+                            <option value="">Cargando productos…</option>
+                        </select>
+                        <small class="error" id="error-productoId"></small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="telefono">Teléfono de contacto</label>
+                        <input type="tel" id="telefono" name="telefono" placeholder="7614-0404" inputmode="numeric"
+                            maxlength="9" autocomplete="tel" aria-describedby="error-telefono">
+                        <small class="error" id="error-telefono"></small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="descripcion">Describe lo que necesitas</label>
+                        <textarea id="descripcion" name="descripcion" rows="5" maxlength="500"
+                            aria-describedby="contador-descripcion error-descripcion"></textarea>
+                        <small class="contador" id="contador-descripcion">0 / 500</small>
+                        <small class="error" id="error-descripcion"></small>
+                    </div>
+
+                    <div class="form-acciones">
+                        <button type="submit" class="btn btn-primario" id="btn-enviar">Enviar solicitud</button>
+                        <button type="button" class="btn btn-secundario" id="btn-cancelar-edicion" hidden>Cancelar
+                            edición</button>
+                    </div>
+                    <div id="mensaje-form" class="mensaje" role="status" aria-live="polite" hidden></div>
+                </form>
+            </section>
+
+            <section class="tarjeta" aria-labelledby="titulo-lista">
+                <div class="lista-cabecera">
+                    <h2 id="titulo-lista">Historial</h2>
+                    <div class="indicadores" id="indicadores-cliente"></div>
+                </div>
+
+                <div class="filtros">
+                    <div class="campo">
+                        <label for="filtro-estado">Estado</label>
+                        <select id="filtro-estado"></select>
+                    </div>
+                    <div class="campo">
+                        <label for="filtro-orden">Orden</label>
+                        <select id="filtro-orden">
+                            <option value="recientes">Más recientes primero</option>
+                            <option value="antiguas">Más antiguas primero</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="lista-solicitudes" class="lista" aria-live="polite"></div>
+            </section>
+        </div>
     </main>
+
+    <div class="derechos">
+        <p>© 2026 Ortesis&Protesis S.A. de C.V. Todos los derechos reservados.</p>
+    </div>
 
     <script type="module" src="js/mis-solicitudes.js"></script>
 </body>

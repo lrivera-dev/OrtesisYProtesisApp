@@ -6,18 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel del personal | OrtoVida</title>
     <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/solicitudes.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
     <header>
         <h3>Ortesis&Protesis</h3>
-        <a href="#" id="logoutButton" class="nav-link button">Cerrar sesión</a>
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+        <label for="menu-toggle" class="hamburger" aria-label="Abrir menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav>
+            <ul>
+                <li><a class="nav-link" href="index.html">Inicio</a></li>
+                <li><a class="nav-link" href="productos.html">Productos</a></li>
+                <li><a class="nav-link active" href="panel-personal.html" aria-current="page">Panel del personal</a></li>
+            </ul>
+        </nav>
+        <div class="sesion">
+            <span class="usuario-correo" id="usuario-correo"></span>
+            <a href="#" id="logoutButton" class="nav-link button">Cerrar sesión</a>
+        </div>
     </header>
 
-    <main>
-        <h1>Panel del personal</h1>
-        <p>Esta sección está en construcción.</p>
+    <main class="sol-main">
+        <section class="sol-hero">
+            <p class="sol-etiqueta"><span aria-hidden="true"></span>Vista del personal</p>
+            <h1>Panel de solicitudes</h1>
+            <p>Revisa las solicitudes de los clientes, actualiza su estado y deja notas de seguimiento.</p>
+        </section>
+
+        <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
+
+        <div id="contenido" hidden>
+            <section class="resumen" aria-label="Indicadores de solicitudes">
+                <div class="resumen-principal">
+                    <div class="kpi">
+                        <span class="kpi-valor" id="kpi-total">0</span>
+                        <span class="kpi-etiqueta">Solicitudes</span>
+                    </div>
+                    <div class="kpi kpi-destacado">
+                        <span class="kpi-valor" id="kpi-pendientes">0</span>
+                        <span class="kpi-etiqueta">Pendientes de atender</span>
+                    </div>
+                    <div class="kpi">
+                        <span class="kpi-valor" id="kpi-proceso">0</span>
+                        <span class="kpi-etiqueta">En proceso en el taller</span>
+                    </div>
+                </div>
+                <div class="chips-estado" id="chips-estado" role="group" aria-label="Filtrar por estado"></div>
+            </section>
+
+            <section class="tarjeta" aria-labelledby="titulo-lista">
+                <div class="lista-cabecera">
+                    <h2 id="titulo-lista">Solicitudes recibidas</h2>
+                    <button type="button" class="btn btn-secundario" id="btn-recargar">Actualizar</button>
+                </div>
+
+                <div class="filtros">
+                    <div class="campo campo-busqueda">
+                        <label for="busqueda">Buscar</label>
+                        <input type="search" id="busqueda" placeholder="Cliente, correo, producto o código">
+                    </div>
+                    <div class="campo">
+                        <label for="filtro-estado">Estado</label>
+                        <select id="filtro-estado"></select>
+                    </div>
+                    <div class="campo">
+                        <label for="filtro-orden">Orden</label>
+                        <select id="filtro-orden">
+                            <option value="antiguas">Más antiguas primero</option>
+                            <option value="recientes">Más recientes primero</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="resultado-conteo" id="resultado-conteo" aria-live="polite"></p>
+
+                <div id="lista-solicitudes" class="lista"></div>
+            </section>
+        </div>
     </main>
+
+    <div class="derechos">
+        <p>© 2026 Ortesis&Protesis S.A. de C.V. Todos los derechos reservados.</p>
+    </div>
 
     <script type="module" src="js/panel-personal.js"></script>
 </body>

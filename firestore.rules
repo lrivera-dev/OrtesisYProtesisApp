@@ -1,0 +1,185 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Funciones compartidas ----------
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function rutaPerfil() {
+      return /databases/$(database)/documents/usuarios/$(request.auth.uid);
+    }
+
+    // El rol se lee del perfil guardado en Firestore (usuarios/{uid}.role), nunca de datos enviados por el cliente.
+    function esPersonal() {
+      return autenticado()
+        && exists(rutaPerfil())
+        && get(rutaPerfil()).data.role == 'personal';
+    }
+
+    // ---------- Usuarios (módulo de autenticación) ----------
+    // Debe coincidir con lo publicado en la consola: revisar con el módulo de auth antes de desplegar.
+
+    match /usuarios/{uid} {
+      allow read: if autenticado() && (request.auth.uid == uid || esPersonal());
+
+      // El registro público solo crea perfiles de cliente; "personal" se asigna desde la consola.
+      allow create: if autenticado()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nombre', 'apellido', 'email', 'role', 'createdAt'])
+        && request.resource.data.role == 'cliente'
+        && request.resource.data.nombre is string
+        && request.resource.data.apellido is string
+        && request.resource.data.email is string;
+
+      // Nadie puede cambiarse el rol desde la aplicación.
+      allow update: if autenticado()
+        && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'createdAt']);
+
+      allow delete: if false;
+    }
+
+    // ---------- Productos (módulo de catálogo) ----------
+    // Provisional: lectura pública y escritura solo para personal. El módulo de catálogo agrega validaciones.
+
+    match /productos/{productoId} {
+      allow read: if true;
+      allow create, update, delete: if esPersonal();
+    }
+
+    // ---------- Solicitudes ----------
+
+    match /solicitudes/{solicitudId} {
+
+      function esDuenio() {
+        return autenticado() && resource.data.clienteId == request.auth.uid;
+      }
+
+      function cambios() {
+        return request.resource.data.diff(resource.data).affectedKeys();
+      }
+
+      // Campos que el cliente escribe al crear o editar.
+      function camposEditablesValidos(d) {
+        return d.tipo in ['producto', 'evaluacion']
+          && d.telefono is string
+          && d.telefono.matches('^[267][0-9]{3}-[0-9]{4}$')
+          && d.descripcion is string
+          && d.descripcion.size() >= 20
+          && d.descripcion.size() <= 500
+          && d.productoNombre is string
+          && d.productoNombre.size() > 0
+          && d.productoNombre.size() <= 150
+          && (
+            (d.tipo == 'producto'
+              && d.productoId is string
+              && exists(/databases/$(database)/documents/productos/$(d.productoId)))
+            || (d.tipo == 'evaluacion' && d.productoId == null)
+          );
+      }
+
+      // Flujo del taller: estado actual -> estados permitidos para el personal.
+      // Los estados cerrados (Completada, Rechazada, Cancelada) no aparecen: ya no se modifican.
+      function transicionValida(de, a) {
+        let flujo = {
+          'Pendiente de revisión': ['En revisión'],
+          'En revisión': ['Requiere información', 'Aprobada', 'Rechazada'],
+          'Requiere información': ['En revisión', 'Rechazada'],
+          'Aprobada': ['En desarrollo'],
+          'En desarrollo': ['Lista para entrega'],
+          'Lista para entrega': ['Completada']
+        };
+        return de in flujo && (a == de || a in flujo[de]);
+      }
+
+      function notaValida(n) {
+        return n.keys().hasOnly(['texto', 'autor', 'estado', 'fecha'])
+          && n.keys().hasAll(['texto', 'autor', 'estado', 'fecha'])
+          && n.texto is string
+          && n.texto.size() >= 5
+          && n.texto.size() <= 300
+          && n.autor is string
+          && n.autor.size() <= 100
+          && n.estado == request.resource.data.estado
+          && n.fecha is timestamp;
+      }
+
+      // Las notas solo se agregan al final: no se editan ni se borran las anteriores.
+      function notasValidas() {
+        let antes = resource.data.notas;
+        let despues = request.resource.data.notas;
+        let agregaNota = despues.size() == antes.size() + 1
+          && despues.size() <= 50
+          && despues.hasAll(antes)
+          && !(despues[despues.size() - 1] in antes)
+          && notaValida(despues[despues.size() - 1]);
+        let pideInformacion = request.resource.data.estado == 'Requiere información'
+          && resource.data.estado != 'Requiere información';
+        return (despues == antes && !pideInformacion) || agregaNota;
+      }
+
+      // Cliente: edita solo si está pendiente o se le pidió información; vuelve a "Pendiente de revisión".
+      function clienteEdita() {
+        return esDuenio()
+          && resource.data.estado in ['Pendiente de revisión', 'Requiere información']
+          && cambios().hasOnly(['tipo', 'productoId', 'productoNombre', 'telefono', 'descripcion', 'estado', 'actualizadoEn'])
+          && request.resource.data.estado == 'Pendiente de revisión'
+          && request.resource.data.actualizadoEn == request.time
+          && camposEditablesValidos(request.resource.data);
+      }
+
+      // Cliente: cancela solo mientras está pendiente de revisión.
+      function clienteCancela() {
+        return esDuenio()
+          && resource.data.estado == 'Pendiente de revisión'
+          && request.resource.data.estado == 'Cancelada'
+          && cambios().hasOnly(['estado', 'actualizadoEn'])
+          && request.resource.data.actualizadoEn == request.time;
+      }
+
+      // Personal: cambia estado siguiendo el flujo y agrega notas; no toca los datos del cliente.
+      function personalActualiza() {
+        return esPersonal()
+          && cambios().hasOnly(['estado', 'notas', 'actualizadoEn'])
+          && request.resource.data.actualizadoEn == request.time
+          && transicionValida(resource.data.estado, request.resource.data.estado)
+          && notasValidas();
+      }
+
+      // Lectura: el cliente solo ve las suyas (las consultas deben filtrar por clienteId); el personal ve todas.
+      allow read: if esPersonal()
+        || (autenticado() && resource.data.clienteId == request.auth.uid);
+
+      // Creación: solo clientes, a su nombre, siempre en estado inicial y sin notas.
+      allow create: if autenticado()
+        && !esPersonal()
+        && request.resource.data.keys().hasOnly([
+          'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
+          'telefono', 'descripcion', 'estado', 'notas', 'creadoEn', 'actualizadoEn'])
+        && request.resource.data.keys().hasAll([
+          'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
+          'telefono', 'descripcion', 'estado', 'notas', 'creadoEn', 'actualizadoEn'])
+        && request.resource.data.clienteId == request.auth.uid
+        && request.resource.data.clienteEmail == request.auth.token.email
+        && request.resource.data.clienteNombre is string
+        && request.resource.data.clienteNombre.size() > 0
+        && request.resource.data.clienteNombre.size() <= 100
+        && request.resource.data.estado == 'Pendiente de revisión'
+        && request.resource.data.notas == []
+        && request.resource.data.creadoEn == request.time
+        && request.resource.data.actualizadoEn == request.time
+        && camposEditablesValidos(request.resource.data);
+
+      allow update: if clienteEdita() || clienteCancela() || personalActualiza();
+
+      // Eliminación: el cliente borra las que nadie ha revisado o que canceló;
+      // el personal solo borra registros rechazados o cancelados.
+      allow delete: if (esDuenio() && resource.data.estado in ['Pendiente de revisión', 'Cancelada'])
+        || (esPersonal() && resource.data.estado in ['Rechazada', 'Cancelada']);
+    }
+  }
+}
