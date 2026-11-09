@@ -10,6 +10,15 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
         rel="stylesheet">
+    <style>
+        .grid-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .grid-formulario .campo-full { grid-column: 1 / -1; }
+        .tabla-crud { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .tabla-crud th, .tabla-crud td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        .btn-acciones { display: flex; gap: 0.5rem; }
+        .btn-editar { background: var(--primary-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-eliminar { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    </style>
 </head>
 
 <body>
@@ -37,13 +46,75 @@
     <main class="sol-main">
         <section class="sol-hero">
             <p class="sol-etiqueta"><span aria-hidden="true"></span>Vista del personal</p>
-            <h1>Panel de solicitudes</h1>
-            <p>Revisa las solicitudes de los clientes, actualiza su estado y deja notas de seguimiento.</p>
+            <h1>Panel de Administración</h1>
+            <p>Gestiona el catálogo de productos y revisa las solicitudes de los clientes.</p>
         </section>
 
         <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
 
         <div id="contenido" hidden>
+
+            <section class="tarjeta" aria-labelledby="titulo-productos" style="margin-bottom: 2rem;">
+                <div class="lista-cabecera">
+                    <h2 id="titulo-productos">Gestión de Catálogo (Productos)</h2>
+                </div>
+                
+                <form id="form-producto">
+                    <input type="hidden" id="prod-id">
+                    
+                    <div class="grid-formulario">
+                        <div class="campo">
+                            <label for="prod-nombre">Nombre del dispositivo</label>
+                            <input type="text" id="prod-nombre" required placeholder="Ej. Órtesis de Rodilla...">
+                        </div>
+                        <div class="campo">
+                            <label for="prod-categoria">Categoría</label>
+                            <select id="prod-categoria" required>
+                                <option value="rodillas">Órtesis de rodilla</option>
+                                <option value="pies">Órtesis de tobillo</option>
+                                <option value="superior">Prótesis de miembro superior</option>
+                                <option value="inferior">Prótesis de miembro inferior</option>
+                            </select>
+                        </div>
+                        <div class="campo campo-full">
+                            <label for="prod-descripcion">Descripción corta</label>
+                            <textarea id="prod-descripcion" required rows="2"></textarea>
+                        </div>
+                        <div class="campo">
+                            <label for="prod-imagen">Ruta de Imagen</label>
+                            <input type="text" id="prod-imagen" required value="img/productos/protesis1.png">
+                        </div>
+                        <div class="campo">
+                            <label for="prod-disponibilidad">Estado de Disponibilidad</label>
+                            <select id="prod-disponibilidad">
+                                <option value="true">Disponible</option>
+                                <option value="false">Agotado / No disponible</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                        <button type="submit" class="btn" style="background: var(--primary-color, #0056b3); color:white; padding: 10px 20px; border:none; border-radius: 6px; cursor:pointer; font-weight: bold;" id="btn-guardar-prod">Guardar Producto</button>
+                        <button type="button" class="btn" style="background: #6c757d; color:white; padding: 10px 20px; border:none; border-radius: 6px; cursor:pointer; font-weight: bold; display:none;" id="btn-cancelar-prod">Cancelar Edición</button>
+                    </div>
+                </form>
+
+                <div style="overflow-x: auto;">
+                    <table class="tabla-crud">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <section class="resumen" aria-label="Indicadores de solicitudes">
                 <div class="resumen-principal">
                     <div class="kpi">
@@ -97,6 +168,7 @@
     </div>
 
     <script type="module" src="js/panel-personal.js"></script>
+    <script type="module" src="js/gestion-productos.js"></script>
 </body>
 
 </html>

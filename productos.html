@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -53,220 +53,11 @@
     <section class="productos-grid-section">
         <div class="seccion-disponible">
             <h3>Dispositivos disponibles</h3>
-            <span class="numero-modelos">9 modelos</span>
+            <span class="numero-modelos" id="contador-modelos">0 modelos</span>
         </div>
-        <div class="productos-grid" id="todos">
-
-            <div class="producto-tarjeta" id="rodillas">
-                <span class="product-tag-top">ÓRTESIS DE RODILLA</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis1.png" alt="Órtesis de Rodilla Post-Quirúrgica OrtoFlex Pro">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Órtesis de Rodilla Post-Quirúrgica OrtoFlex Pro</h3>
-                    <p>Articulaciones policéntricas regulables en flexo-extensión
-                        con barras de duraluminio aeronáutico y almohadillas transpirables
-                        termoformadas para control de ligamentos cruzados (LCA/LCP).</p>
-                    <div class="product-specs">
-                        <span>Rango 0°-120°</span>
-                        <span>Fijación milimétrica</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">ÓRTESIS DE RODILLA</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis2.png" alt="Rodillera de Descarga Unicompartimental OsteoRelief">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Rodillera de Descarga Unicompartimental OsteoRelief</h3>
-                    <p>Sistema correctivo biomecánico de 3 puntos de palanca para
-                        artrosis de rodilla grado I-IV, aliviando de forma focalizada la sobrecarga sobre el
-                        compartimento medial.</p>
-                    <div class="product-specs">
-                        <span>Descarga 3 Puntos</span>
-                        <span>Alineación Asistida</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">ÓRTESIS DE RODILLA</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis3.png" alt="Estabilizador Rotuliano ActiveSport">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Estabilizador Rotuliano ActiveSport</h3>
-                    <p>Rodillera deportiva con anillo de silicona de
-                        alta densidad para control de la rótula y contención en
-                        tendinitis rotuliana o condromalacia leve durante la actividad física.</p>
-                    <div class="product-specs">
-                        <span>Anillo de Silicona</span>
-                        <span>Neopreno Breathe</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta" id="pies">
-                <span class="product-tag-top">ÓRTESIS DE TOBILLO</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis4.png" alt="Férula Estabilizadora Dinámica AFO Matrix">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Férula Estabilizadora Dinámica AFO Matrix</h3>
-                    <p>Diseño ultraligero en fibra de carbono preimpregnado
-                        con retorno elástico optimizado para la marcha en pacientes
-                        con caída de pie o secuelas neurológicas.</p>
-                    <div class="product-specs">
-                        <span>Fibra de Carbono 100%</span>
-                        <span>Retorno Asistido</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">ÓRTESIS DE TOBILLO</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis5.png" alt="Tobillera Estabilizadora con Alvalor MalleoShield">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Tobillera Estabilizadora MalleoShield</h3>
-                    <p>Valvas laterales rígidas anatómicas con forro de gel frío
-                        para esguinces severos de grado II y III, evitando movimientos
-                        de inversión y eversión forzada.</p>
-                    <div class="product-specs">
-                        <span>Valvas Anatómicas</span>
-                        <span>Terapia de Gel</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">ÓRTESIS DE TOBILLO</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis6.png" alt="Bota Walker Fija ProGuard">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Bota Walker Fija ProGuard</h3>
-                    <p>Estructura rígida de soporte tibial con suela mecedora antideslizante
-                        para inmovilización post-operatoria de fracturas de tobillo,
-                        pie y lesiones de tejidos blandos.</p>
-                    <div class="product-specs">
-                        <span>Suela Mecedora</span>
-                        <span>Rigidez Total</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta" id="superior">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO SUPERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis7.png" alt="Mano Biónica Mioeléctrica Multi-Articular NeuroGrip">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Mano Biónica Mioeléctrica Multi-Articular NeuroGrip</h3>
-                    <p>5 motores independientes controlados por señales mioeléctricas
-                        superficiales del muñón con 14 patrones de agarre programables vía
-                        aplicación clínica inalámbrica.</p>
-                    <div class="product-specs">
-                        <span>14 Patrones de Agarre</span>
-                        <span>Retroalimentación Háptica</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO SUPERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis8.png" alt="Prótesis Transradial Mio-Flex Estética y Funcional">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Prótesis Transradial Mio-Flex Estética y Funcional</h3>
-                    <p>Socket ergonómico de silicona biomédica con electrodos integrados y
-                        guante cosmético personalizado de alta fidelidad con textura cutánea natural.</p>
-                    <div class="product-specs">
-                        <span>Silicona Biomédica</span>
-                        <span>Sensor Mioeléctrico Dual</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO SUPERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis9.png" alt="Prótesis Mecánica por Cable WorkHand">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Prótesis Mecánica por Cable WorkHand</h3>
-                    <p>Dispositivo de accionamiento corporal mediante arnés de hombro y cable de tracción
-                        de alta resistencia, ideal para tareas de trabajo pesado y alta durabilidad.</p>
-                    <div class="product-specs">
-                        <span>Accionamiento Corporal</span>
-                        <span>Alta Resistencia</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta" id="inferior">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO INFERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis10.png" alt="Prótesis Transtibial Apex Active con Socket de Vacío">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Prótesis Transtibial Apex Active con Socket de Vacío</h3>
-                    <p>Encaje distal sellado térmicamente con suspensión activa por bomba mecánica, pie dinámico de
-                        respuesta de carbono multicapa y absorción tridimensional de impacto.</p>
-                    <div class="product-specs">
-                        <span>Vacío Activo de Presión</span>
-                        <span>Pie Dinámico Multicapa</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO INFERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis11.png" alt="Prótesis Transfemoral Biónica K-Sensor Microprocesada">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Prótesis Transfemoral Biónica K-Sensor Microprocesada</h3>
-                    <p>Rodilla hidráulica inteligente con microprocesadores y giroscopios en tiempo real
-                        que adaptan la cadencia y ángulo de flexión en escaleras y planos inclinados.</p>
-                    <div class="product-specs">
-                        <span>Kit Biónico C-HR</span>
-                        <span>Resistente al Agua IP67</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
-
-            <div class="producto-tarjeta">
-                <span class="product-tag-top">PRÓTESIS DE MIEMBRO INFERIOR</span>
-                <div class="product-img-container">
-                    <img src="img/productos/protesis12.png" alt="Lámina de Carrera Transtibial Cheetah Sprint">
-                </div>
-                <div class="producto-contenido">
-                    <h3>Lámina de Carrera Transtibial Cheetah Sprint</h3>
-                    <p>Ballesta aerodinámica de fibra de carbono aeroespacial de grado militar diseñada para atletas de
-                        alta competencia, con retorno de energía elástica certificado del 92%.</p>
-                    <div class="product-specs">
-                        <span>Carbono Aeroespacial</span>
-                        <span>92% Retorno Elástico</span>
-                    </div>
-                    <a href="contacto.html" class="btn-consultar">Consultar disponibilidad</a>
-                </div>
-            </div>
+        
+        <!-- Contenedor vacío donde js/catalogo.js inyectará las tarjetas -->
+        <div class="productos-grid" id="contenedor-productos">
         </div>
     </section>
 
@@ -414,6 +205,7 @@
     <div class="derechos">
         <p>© 2026 Ortesis&Protesis S.A. de C.V. Todos los derechos reservados.</p>
     </div>
+    <script type="module" src="js/catalogo.js"></script>
 </body>
 
 </html>
