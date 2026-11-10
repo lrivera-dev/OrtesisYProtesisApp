@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión del catálogo | OrtoVida</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/solicitudes.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <h3>Ortesis&Protesis</h3>
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+        <label for="menu-toggle" class="hamburger" aria-label="Abrir menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav>
+            <ul>
+                <li><a class="nav-link" href="panel-personal.html">Solicitudes</a></li>
+                <li><a class="nav-link active" href="gestion-catalogo.html" aria-current="page">Catálogo</a></li>
+            </ul>
+        </nav>
+        <div class="sesion">
+            <span class="usuario-correo" id="usuario-correo"></span>
+            <a href="#" id="logoutButton" class="nav-link button">Cerrar sesión</a>
+        </div>
+    </header>
+
+    <main class="sol-main">
+        <section class="sol-hero">
+            <p class="sol-etiqueta"><span aria-hidden="true"></span>Administración del catálogo</p>
+            <h1>Productos</h1>
+            <p>Administra los productos que los clientes pueden consultar antes de solicitar una evaluación.</p>
+        </section>
+
+        <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
+
+        <div id="contenido" class="gestion-catalogo" hidden>
+            <section class="tarjeta" aria-labelledby="titulo-lista-productos">
+                <div class="lista-cabecera">
+                    <div>
+                        <h2 id="titulo-lista-productos">Catálogo actual</h2>
+                        <p class="ayuda">Los cambios se reflejan en el catálogo público.</p>
+                    </div>
+                    <div class="catalogo-acciones">
+                        <button type="button" class="btn btn-primario" id="btn-nuevo-producto">Agregar producto</button>
+                        <button type="button" class="btn btn-secundario" id="btn-recargar-productos">Actualizar</button>
+                    </div>
+                </div>
+
+                <div class="filtros catalogo-filtros">
+                    <div class="campo campo-busqueda">
+                        <label for="busqueda-productos">Buscar producto</label>
+                        <input type="search" id="busqueda-productos" placeholder="Nombre o categoría">
+                    </div>
+                    <div class="campo">
+                        <label for="filtro-disponibilidad">Disponibilidad</label>
+                        <select id="filtro-disponibilidad">
+                            <option value="todos">Todas</option>
+                            <option value="disponibles">Disponibles</option>
+                            <option value="no-disponibles">No disponibles</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secundario" id="btn-cargar-iniciales" hidden>
+                    Cargar los 12 productos de ejemplo
+                </button>
+                <div class="tabla-contenedor">
+                    <table class="tabla-crud">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Disponibilidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="form-producto-contenedor" class="tarjeta" aria-labelledby="titulo-form-producto" hidden>
+                <div class="lista-cabecera">
+                    <div>
+                        <h2 id="titulo-form-producto">Agregar producto</h2>
+                        <p class="ayuda">Los cambios se reflejan en el catálogo público.</p>
+                    </div>
+                </div>
+                <form id="form-producto" novalidate>
+                    <input type="hidden" id="prod-id">
+                    <div class="grid-formulario">
+                        <div class="campo">
+                            <label for="prod-nombre">Nombre del producto</label>
+                            <input type="text" id="prod-nombre" maxlength="150" required>
+                        </div>
+                        <div class="campo">
+                            <label for="prod-categoria">Categoría</label>
+                            <select id="prod-categoria" required>
+                                <option value="rodillas">Órtesis de rodilla</option>
+                                <option value="pies">Órtesis de tobillo</option>
+                                <option value="superior">Prótesis de miembro superior</option>
+                                <option value="inferior">Prótesis de miembro inferior</option>
+                            </select>
+                        </div>
+                        <div class="campo campo-full">
+                            <label for="prod-descripcion">Descripción</label>
+                            <textarea id="prod-descripcion" rows="3" maxlength="500" required></textarea>
+                        </div>
+                        <div class="campo">
+                            <label for="prod-imagen">Ruta de imagen</label>
+                            <input type="text" id="prod-imagen" maxlength="300" required value="img/productos/protesis1.png">
+                        </div>
+                        <div class="campo">
+                            <label for="prod-disponibilidad">Disponibilidad</label>
+                            <select id="prod-disponibilidad" required>
+                                <option value="true">Disponible</option>
+                                <option value="false">No disponible</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-acciones">
+                        <button type="submit" class="btn btn-primario" id="btn-guardar-prod">Guardar producto</button>
+                        <button type="button" class="btn btn-secundario" id="btn-cancelar-prod" hidden>Cancelar</button>
+                    </div>
+                    <div id="mensaje-catalogo" class="mensaje" role="status" aria-live="polite" hidden></div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <div class="derechos">
+        <p>© 2026 Ortesis&Protesis S.A. de C.V. Todos los derechos reservados.</p>
+    </div>
+
+    <script type="module" src="js/gestion-catalogo.js"></script>
+</body>
+
+</html>

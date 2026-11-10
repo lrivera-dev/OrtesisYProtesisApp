@@ -2,6 +2,12 @@ import { loginUser, logoutUser } from "./firebase.js";
 
 const loginForm = document.getElementById("loginForm");
 const authStatus = document.getElementById("authStatus");
+const productoSolicitado = new URLSearchParams(window.location.search).get("producto");
+
+if (productoSolicitado) {
+    const enlaceRegistro = document.querySelector('a[href="registro.html"]');
+    enlaceRegistro.href = `registro.html?producto=${encodeURIComponent(productoSolicitado)}`;
+}
 
 const vistasPorRol = {
     cliente: "mis-solicitudes.html",
@@ -27,7 +33,10 @@ loginForm.addEventListener("submit", async (event) => {
             throw new Error("La cuenta tiene un rol no reconocido.");
         }
 
-        window.location.assign(destino);
+        const destinoFinal = profile.role === "cliente" && productoSolicitado
+            ? `${destino}?producto=${encodeURIComponent(productoSolicitado)}`
+            : destino;
+        window.location.assign(destinoFinal);
     } catch (error) {
         await logoutUser().catch(() => { });
         authStatus.textContent =

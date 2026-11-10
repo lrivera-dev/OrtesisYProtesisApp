@@ -69,6 +69,10 @@
     align-items: start;
 }
 
+.sol-layout[hidden] {
+    display: none;
+}
+
 .tarjeta {
     background: var(--color-background);
     border: 1px solid var(--color-border);
@@ -86,6 +90,65 @@
 .form-solicitud {
     position: sticky;
     top: 16px;
+}
+
+.producto-solicitud {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    margin: 16px 0 20px;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-background-secondary);
+}
+
+.producto-solicitud[hidden] {
+    display: none;
+}
+
+.producto-solicitud img {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    border-radius: var(--radius-small);
+    background: var(--color-background);
+}
+
+.producto-solicitud h3 {
+    margin: 4px 0;
+    font-size: 1rem;
+}
+
+.producto-solicitud p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.producto-solicitud-etiqueta {
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.producto-solicitud-error {
+    grid-column: 1 / -1;
+    color: var(--color-danger) !important;
+}
+
+.enlace-catalogo {
+    display: inline-flex;
+    width: fit-content;
+    margin: 0 0 18px;
+    text-decoration: none;
+}
+
+.enlace-catalogo[hidden] {
+    display: none;
 }
 
 .ayuda {
@@ -141,27 +204,6 @@
 
 .campo [aria-invalid="true"] {
     border-color: var(--color-danger);
-}
-
-.opciones-tipo {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    font-size: 14px;
-}
-
-.opciones-tipo label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 400;
-    cursor: pointer;
-}
-
-.opciones-tipo input[type="radio"] {
-    width: auto;
-    margin: 0;
-    accent-color: var(--color-tertiary);
 }
 
 .error {
@@ -243,6 +285,103 @@
     gap: 10px;
 }
 
+.grid-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 20px;
+    margin: 22px 0;
+}
+
+.grid-formulario .campo-full {
+    grid-column: 1 / -1;
+}
+
+.gestion-catalogo {
+    display: grid;
+    gap: 24px;
+    padding-bottom: 48px;
+}
+
+.gestion-catalogo[hidden] {
+    display: none;
+}
+
+.catalogo-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.catalogo-filtros {
+    margin-top: 8px;
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+.tabla-crud {
+    width: 100%;
+    min-width: 620px;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.tabla-solicitudes {
+    min-width: 920px;
+}
+
+.tabla-vacia {
+    padding: 32px !important;
+    color: var(--color-text-secondary);
+    text-align: center !important;
+}
+
+.tabla-solicitudes td {
+    font-size: 14px;
+}
+
+.tabla-crud th,
+.tabla-crud td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.tabla-crud th {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tabla-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tabla-acciones .btn {
+    padding: 7px 12px;
+}
+
+.producto-estado {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.producto-estado.disponible,
+.producto-disponibilidad.disponible {
+    color: var(--color-primary);
+}
+
+.producto-estado.agotado,
+.producto-disponibilidad.agotado,
+.producto-no-disponible {
+    color: var(--color-danger);
+}
+
 /* ---------- Mensajes ---------- */
 
 .mensaje {
@@ -304,6 +443,13 @@
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 16px;
+}
+
+.lista-acciones-cliente {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .indicadores {
@@ -616,6 +762,108 @@
     box-shadow: 0 20px 60px rgba(7, 7, 9, 0.25);
 }
 
+.dialogo-detalle {
+    width: min(720px, calc(100vw - 32px));
+    max-width: 720px;
+    max-height: min(88vh, 900px);
+    overflow-y: auto;
+}
+
+.detalle-dialogo-cabecera,
+.detalle-dialogo-resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+}
+
+.detalle-dialogo-cabecera {
+    margin-bottom: 18px;
+}
+
+.detalle-dialogo-cabecera h2 {
+    margin: 5px 0 0;
+}
+
+.detalle-dialogo-resumen {
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+
+.detalle-dialogo-resumen p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.detalle-dialogo-datos {
+    grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
+    padding: 16px 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.form-detalle-cita {
+    padding-top: 18px;
+}
+
+.form-detalle-cita h3,
+.detalle-notas h3 {
+    margin: 0 0 8px;
+}
+
+.form-detalle-cita .ayuda {
+    line-height: 1.5;
+}
+
+.form-detalle-cita .form-acciones {
+    margin-top: 10px;
+}
+
+.detalle-notas {
+    margin-top: 20px;
+}
+
+.respuesta-propuesta {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-background-secondary);
+}
+
+.respuesta-propuesta details {
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border);
+}
+
+.respuesta-propuesta summary {
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.form-propuesta-cliente {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.form-propuesta-cliente input {
+    font: inherit;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-small);
+    padding: 10px 12px;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+}
+
+.form-propuesta-cliente label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .dialogo::backdrop {
     background: rgba(7, 7, 9, 0.45);
 }
@@ -671,6 +919,36 @@
     }
 
     .solicitud-cabecera {
+        flex-direction: column;
+    }
+
+    .grid-formulario {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-formulario .campo-full {
+        grid-column: auto;
+    }
+
+    .producto-solicitud {
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .producto-solicitud img {
+        width: 72px;
+        height: 72px;
+    }
+
+    .tabla-acciones {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .detalle-dialogo-cabecera,
+    .detalle-dialogo-resumen {
+        align-items: flex-start;
         flex-direction: column;
     }
 }

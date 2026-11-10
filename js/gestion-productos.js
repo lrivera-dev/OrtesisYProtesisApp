@@ -1,158 +1,286 @@
-import { db } from './firebase.js';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    deleteField,
+    doc,
+    getDocs,
+    updateDoc,
+    writeBatch
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { db } from "./firebase.js";
+import { obtenerSesion } from "./solicitudes/sesion.js";
+import { pintarUsuario, mostrarMensaje } from "./solicitudes/ui-comun.js";
+import { PRODUCTOS_INICIALES } from "./productos-iniciales.js";
+import { productoDisponible } from "./productos-utiles.js";
 
-const formProducto = document.getElementById('form-producto');
-const tablaBody = document.getElementById('tabla-productos-body');
-const btnCancelar = document.getElementById('btn-cancelar-prod');
-const btnGuardar = document.getElementById('btn-guardar-prod');
+const el = {
+    usuario: document.getElementById("usuario-correo"),
+    contenido: document.getElementById("contenido"),
+    mensajeGlobal: document.getElementById("mensaje-global"),
+    contenedorForm: document.getElementById("form-producto-contenedor"),
+    botonNuevo: document.getElementById("btn-nuevo-producto"),
+    form: document.getElementById("form-producto"),
+    tabla: document.getElementById("tabla-productos-body"),
+    botonCancelar: document.getElementById("btn-cancelar-prod"),
+    botonGuardar: document.getElementById("btn-guardar-prod"),
+    botonRecargar: document.getElementById("btn-recargar-productos"),
+    botonIniciales: document.getElementById("btn-cargar-iniciales"),
+    mensaje: document.getElementById("mensaje-catalogo"),
+    id: document.getElementById("prod-id"),
+    nombre: document.getElementById("prod-nombre"),
+    categoria: document.getElementById("prod-categoria"),
+    descripcion: document.getElementById("prod-descripcion"),
+    imagen: document.getElementById("prod-imagen"),
+    disponibilidad: document.getElementById("prod-disponibilidad"),
+    busqueda: document.getElementById("busqueda-productos"),
+    filtroDisponibilidad: document.getElementById("filtro-disponibilidad")
+};
 
-const inputId = document.getElementById('prod-id');
-const inputNombre = document.getElementById('prod-nombre');
-const inputCategoria = document.getElementById('prod-categoria');
-const inputDescripcion = document.getElementById('prod-descripcion');
-const inputImagen = document.getElementById('prod-imagen');
-const inputDisponibilidad = document.getElementById('prod-disponibilidad');
+const CATEGORIAS = {
+    rodillas: "Órtesis de rodilla",
+    pies: "Órtesis de tobillo",
+    superior: "Prótesis de miembro superior",
+    inferior: "Prótesis de miembro inferior"
+};
+
+const ETIQUETAS = {
+    rodillas: "ÓRTESIS DE RODILLA",
+    pies: "ÓRTESIS DE TOBILLO",
+    superior: "PRÓTESIS DE MIEMBRO SUPERIOR",
+    inferior: "PRÓTESIS DE MIEMBRO INFERIOR"
+};
 
 let listaProductos = [];
 
-async function cargarProductos() {
-    try {
-        tablaBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando inventario...</td></tr>';
-        const snapshot = await getDocs(collection(db, 'productos'));
-        
-        listaProductos = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        renderizarTabla();
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        tablaBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Error al cargar datos.</td></tr>';
-    }
+function crearCelda(texto) {
+    const celda = document.createElement("td");
+    celda.textContent = texto ?? "";
+    return celda;
 }
 
-function renderizarTabla() {
-    tablaBody.innerHTML = '';
-    if (listaProductos.length === 0) {
-        tablaBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay productos registrados.</td></tr>';
+function pintarTabla() {
+    const texto = el.busqueda.value.trim().toLocaleLowerCase("es");
+    const filtro = el.filtroDisponibilidad.value;
+    const productosVisibles = listaProductos.filter((producto) => {
+        const coincideTexto = `${producto.nombre ?? ""} ${CATEGORIAS[producto.categoria] ?? producto.categoria ?? ""}`
+            .toLocaleLowerCase("es").includes(texto);
+        const disponible = productoDisponible(producto);
+        const coincideEstado = filtro === "todos"
+            || (filtro === "disponibles" && disponible)
+            || (filtro === "no-disponibles" && !disponible);
+        return coincideTexto && coincideEstado;
+    });
+
+    if (!productosVisibles.length) {
+        const fila = document.createElement("tr");
+        const celda = crearCelda(listaProductos.length
+            ? "No hay productos que coincidan con la búsqueda o el filtro."
+            : "No hay productos registrados. Puedes cargar los datos de ejemplo o agregar uno.");
+        celda.colSpan = 4;
+        fila.append(celda);
+        el.tabla.replaceChildren(fila);
         return;
     }
 
-    listaProductos.forEach(prod => {
-        const categoriasNombres = {
-            'rodillas': 'Órtesis de rodilla',
-            'pies': 'Órtesis de tobillo',
-            'superior': 'Prótesis Sup.',
-            'inferior': 'Prótesis Inf.'
-        };
+    const filas = productosVisibles.map((producto) => {
+        const fila = document.createElement("tr");
+        fila.append(
+            crearCelda(producto.nombre),
+            crearCelda(CATEGORIAS[producto.categoria] || producto.categoria)
+        );
 
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
-            <td><strong>${prod.nombre}</strong></td>
-            <td>${categoriasNombres[prod.categoria] || prod.categoria}</td>
-            <td>
-                <span style="color: ${prod.disponibilidad ? 'green' : 'red'}; font-weight: bold;">
-                    ${prod.disponibilidad ? 'Disponible' : 'Agotado'}
-                </span>
-            </td>
-            <td style="display: flex; gap: 8px;">
-                <button class="btn-editar" data-id="${prod.id}" style="background: #0056b3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600;">Editar</button>
-                <button class="btn-eliminar" data-id="${prod.id}" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 600;">Eliminar</button>
-            </td>
-        `;
-        tablaBody.appendChild(fila);
+        const estado = document.createElement("td");
+        const etiqueta = document.createElement("span");
+        etiqueta.className = productoDisponible(producto) ? "producto-estado disponible" : "producto-estado agotado";
+        etiqueta.textContent = productoDisponible(producto) ? "Disponible" : "No disponible";
+        estado.append(etiqueta);
+        fila.append(estado);
+
+        const acciones = document.createElement("td");
+        acciones.className = "tabla-acciones";
+        const editar = document.createElement("button");
+        editar.type = "button";
+        editar.className = "btn btn-secundario";
+        editar.dataset.accion = "editar";
+        editar.dataset.id = producto.id;
+        editar.textContent = "Editar";
+        const eliminar = document.createElement("button");
+        eliminar.type = "button";
+        eliminar.className = "btn btn-peligro-texto";
+        eliminar.dataset.accion = "eliminar";
+        eliminar.dataset.id = producto.id;
+        eliminar.textContent = "Eliminar";
+        acciones.append(editar, eliminar);
+        fila.append(acciones);
+        return fila;
     });
 
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', (e) => prepararEdicion(e.target.dataset.id));
-    });
-    
-    document.querySelectorAll('.btn-eliminar').forEach(btn => {
-        btn.addEventListener('click', (e) => eliminarProducto(e.target.dataset.id));
-    });
+    el.tabla.replaceChildren(...filas);
 }
 
-formProducto.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    btnGuardar.disabled = true;
-    btnGuardar.textContent = 'Guardando...';
-
-    const etiquetas = {
-        'rodillas': 'ÓRTESIS DE RODILLA',
-        'pies': 'ÓRTESIS DE TOBILLO',
-        'superior': 'PRÓTESIS DE MIEMBRO SUPERIOR',
-        'inferior': 'PRÓTESIS DE MIEMBRO INFERIOR'
-    };
-
-    const productoData = {
-        nombre: inputNombre.value,
-        categoria: inputCategoria.value,
-        etiqueta: etiquetas[inputCategoria.value],
-        descripcion: inputDescripcion.value,
-        imagen: inputImagen.value,
-        disponibilidad: inputDisponibilidad.value === 'true',
-        specs: ['Especificación 1', 'Especificación 2'] // Valores por defecto simples
-    };
-
+async function cargarProductos() {
+    el.botonRecargar.disabled = true;
+    mostrarMensaje(el.mensajeGlobal, "carga", "Cargando productos…");
     try {
-        if (inputId.value) {
-            await updateDoc(doc(db, 'productos', inputId.value), productoData);
-            alert('Producto actualizado correctamente');
-        } else {
-            await addDoc(collection(db, 'productos'), productoData);
-            alert('Producto agregado al catálogo');
-        }
-        
-        limpiarFormulario();
-        await cargarProductos();
+        const snapshot = await getDocs(collection(db, "productos"));
+        listaProductos = snapshot.docs.map((documento) => ({
+            id: documento.id,
+            ...documento.data()
+        }));
+        el.botonIniciales.hidden = listaProductos.length > 0;
+        pintarTabla();
+        mostrarMensaje(el.mensajeGlobal, "", "");
     } catch (error) {
-        console.error("Error al guardar:", error);
-        alert('Hubo un error al guardar el producto.');
+        console.error("Error al cargar productos:", error);
+        mostrarMensaje(el.mensajeGlobal, "error", "No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.");
     } finally {
-        btnGuardar.disabled = false;
-        btnGuardar.textContent = 'Guardar Producto';
+        el.botonRecargar.disabled = false;
     }
-});
+}
 
 function prepararEdicion(id) {
-    const producto = listaProductos.find(p => p.id === id);
+    const producto = listaProductos.find((item) => item.id === id);
     if (!producto) return;
 
-    inputId.value = producto.id;
-    inputNombre.value = producto.nombre;
-    inputCategoria.value = producto.categoria;
-    inputDescripcion.value = producto.descripcion;
-    inputImagen.value = producto.imagen;
-    inputDisponibilidad.value = producto.disponibilidad ? 'true' : 'false';
+    el.id.value = producto.id;
+    el.nombre.value = producto.nombre ?? "";
+    el.categoria.value = producto.categoria ?? "rodillas";
+    el.descripcion.value = producto.descripcion ?? "";
+    el.imagen.value = producto.imagen ?? "img/productos/protesis1.png";
+    el.disponibilidad.value = productoDisponible(producto) ? "true" : "false";
+    el.botonGuardar.textContent = "Actualizar producto";
+    el.botonCancelar.hidden = false;
+    document.getElementById("titulo-form-producto").textContent = "Editar producto";
+    el.contenedorForm.hidden = false;
+    el.form.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.nombre.focus();
+}
 
-    btnGuardar.textContent = 'Actualizar Producto';
-    btnCancelar.style.display = 'block';
-    
-    formProducto.scrollIntoView({ behavior: 'smooth' });
+function limpiarFormulario() {
+    el.form.reset();
+    el.id.value = "";
+    el.imagen.value = "img/productos/protesis1.png";
+    el.botonGuardar.textContent = "Guardar producto";
+    el.botonCancelar.hidden = true;
+    document.getElementById("titulo-form-producto").textContent = "Agregar producto";
+    el.contenedorForm.hidden = true;
+    mostrarMensaje(el.mensaje, "", "");
+}
+
+async function guardarProducto(evento) {
+    evento.preventDefault();
+    if (!el.form.reportValidity()) return;
+
+    const producto = {
+        nombre: el.nombre.value.trim(),
+        categoria: el.categoria.value,
+        etiqueta: ETIQUETAS[el.categoria.value],
+        descripcion: el.descripcion.value.trim(),
+        imagen: el.imagen.value.trim(),
+        disponibilidad: el.disponibilidad.value === "true",
+        disponible: deleteField(),
+        specs: listaProductos.find((item) => item.id === el.id.value)?.specs ?? ["Consulta con nuestro personal", "Adaptación personalizada"]
+    };
+
+    el.botonGuardar.disabled = true;
+    mostrarMensaje(el.mensaje, "carga", "Guardando producto…");
+    try {
+        const estabaEditando = Boolean(el.id.value);
+        if (el.id.value) {
+            await updateDoc(doc(db, "productos", el.id.value), producto);
+        } else {
+            delete producto.disponible;
+            await addDoc(collection(db, "productos"), producto);
+        }
+        limpiarFormulario();
+        await cargarProductos();
+        mostrarMensaje(el.mensajeGlobal, "exito", estabaEditando
+            ? "Producto actualizado. El catálogo público ya refleja el cambio."
+            : "Producto agregado al catálogo público.");
+    } catch (error) {
+        console.error("Error al guardar el producto:", error);
+        mostrarMensaje(el.mensaje, "error", "No se pudo guardar el producto. Verifica los datos y los permisos de Firestore.");
+    } finally {
+        el.botonGuardar.disabled = false;
+    }
+}
+
+async function cargarCatalogoInicial() {
+    el.botonIniciales.disabled = true;
+    mostrarMensaje(el.mensajeGlobal, "carga", "Preparando el catálogo de ejemplo…");
+    try {
+        const productosRef = collection(db, "productos");
+        const actual = await getDocs(productosRef);
+        if (!actual.empty) {
+            await cargarProductos();
+            mostrarMensaje(el.mensajeGlobal, "exito", "El catálogo ya tiene productos; no se agregaron duplicados.");
+            return;
+        }
+
+        const lote = writeBatch(db);
+        PRODUCTOS_INICIALES.forEach((producto) => {
+            lote.set(doc(productosRef), producto);
+        });
+        await lote.commit();
+        await cargarProductos();
+        mostrarMensaje(el.mensajeGlobal, "exito", "Se agregaron los 12 productos de ejemplo.");
+    } catch (error) {
+        console.error("Error al cargar el catálogo inicial:", error);
+        mostrarMensaje(el.mensajeGlobal, "error", "No se pudo cargar el catálogo inicial. Inténtalo de nuevo.");
+    } finally {
+        el.botonIniciales.disabled = false;
+    }
 }
 
 async function eliminarProducto(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar este producto del catálogo? Esta acción no se puede deshacer.')) {
-        try {
-            await deleteDoc(doc(db, 'productos', id));
-            alert('Producto eliminado');
-            await cargarProductos();
-        } catch (error) {
-            console.error("Error al eliminar:", error);
-            alert('No se pudo eliminar el producto.');
-        }
+    const producto = listaProductos.find((item) => item.id === id);
+    if (!producto || !window.confirm(`¿Eliminar “${producto.nombre}” del catálogo?`)) return;
+
+    try {
+        await deleteDoc(doc(db, "productos", id));
+        await cargarProductos();
+        mostrarMensaje(el.mensajeGlobal, "exito", "Producto eliminado del catálogo.");
+    } catch (error) {
+        console.error("Error al eliminar el producto:", error);
+        mostrarMensaje(el.mensajeGlobal, "error", "No se pudo eliminar el producto.");
     }
 }
 
-btnCancelar.addEventListener('click', limpiarFormulario);
-
-function limpiarFormulario() {
-    formProducto.reset();
-    inputId.value = '';
-    btnGuardar.textContent = 'Guardar Producto';
-    btnCancelar.style.display = 'none';
+function configurarEventos() {
+    el.form.addEventListener("submit", guardarProducto);
+    el.botonCancelar.addEventListener("click", limpiarFormulario);
+    el.botonRecargar.addEventListener("click", cargarProductos);
+    el.botonIniciales.addEventListener("click", cargarCatalogoInicial);
+    el.botonNuevo.addEventListener("click", () => {
+        limpiarFormulario();
+        el.contenedorForm.hidden = false;
+        el.botonCancelar.hidden = false;
+        el.nombre.focus();
+        el.contenedorForm.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    el.busqueda.addEventListener("input", pintarTabla);
+    el.filtroDisponibilidad.addEventListener("change", pintarTabla);
+    el.tabla.addEventListener("click", (evento) => {
+        const boton = evento.target.closest("button[data-accion]");
+        if (!boton) return;
+        if (boton.dataset.accion === "editar") prepararEdicion(boton.dataset.id);
+        if (boton.dataset.accion === "eliminar") eliminarProducto(boton.dataset.id);
+    });
 }
 
-document.addEventListener('DOMContentLoaded', cargarProductos);
+export async function iniciarGestionProductos() {
+    try {
+        const { usuario, perfil } = await obtenerSesion();
+        if (!usuario || perfil?.role !== "personal") return;
+
+        pintarUsuario(el.usuario, usuario);
+        el.contenido.hidden = false;
+        el.contenedorForm.hidden = true;
+        configurarEventos();
+        await cargarProductos();
+    } catch (error) {
+        console.error("No se pudo iniciar la gestión del catálogo:", error);
+        mostrarMensaje(el.mensajeGlobal, "error", "No se pudo verificar tu sesión. Vuelve a iniciar sesión.");
+    }
+}

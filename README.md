@@ -1,10 +1,10 @@
 # Gestión de solicitudes de órtesis y prótesis
 
-Aplicación web para que clientes consulten el catálogo de OrtoVida y soliciten una evaluación o un producto. El personal podrá revisar las solicitudes y actualizar su estado para que cada cliente pueda consultar el avance.
+Aplicación web para que clientes consulten el catálogo de OrtoVida y soliciten coordinar una evaluación. El personal acuerda la cita, registra cuándo se atendió y administra el catálogo.
 
 Este proyecto amplía el sitio estático desarrollado para el Desafío Práctico I de Desarrollo Web. La aplicación se desarrollará como parte del **Desafío Práctico II — Desarrollo Web I**, Ingeniería de Software y Negocios Digitales, ESEN.
 
-> **Estado:** propuesta y desarrollo en curso. El sitio estático existente sirve como base visual; las funciones de autenticación, persistencia y gestión descritas aquí deben implementarse y verificarse antes de la entrega.
+> **Estado:** módulos de autenticación, catálogo y solicitudes implementados. Falta completar la verificación integral con las reglas publicadas y preparar la demo final.
 
 ## Problema que resuelve
 
@@ -12,23 +12,23 @@ El sitio informativo permite conocer los servicios y productos, pero no permite 
 
 ## Roles
 
-- **Cliente:** se registra e inicia sesión, consulta el catálogo, crea solicitudes y consulta o actualiza las propias cuando su estado lo permita.
-- **Personal:** consulta las solicitudes recibidas, agrega notas de seguimiento y actualiza sus estados. También administra los productos del catálogo.
+- **Cliente:** se registra e inicia sesión, consulta el catálogo, solicita una evaluación de un producto o general, indica sus horarios preferidos y consulta el estado y la fecha confirmada.
+- **Personal:** consulta solicitudes en una tabla, coordina y confirma citas, registra si fueron atendidas y administra los productos del catálogo.
 
 El registro público creará cuentas de cliente. El rol de personal será asignado de forma controlada, no elegido por el usuario durante el registro. Los permisos deberán aplicarse en las reglas de seguridad de Firebase, además de adaptar la interfaz al rol.
 
 ## Procesos principales
 
-1. **Catálogo y solicitud:** el cliente consulta los productos o servicios y envía una solicitud relacionada con un producto o servicio seleccionado.
-2. **Revisión y seguimiento:** el personal revisa la solicitud y actualiza el estado. El cliente puede consultar el avance desde su cuenta.
+1. **Catálogo y solicitud:** el cliente consulta los productos y solicita coordinar una evaluación relacionada con un producto o una evaluación general.
+2. **Coordinación y seguimiento:** el personal contacta al cliente, registra el horario acordado y marca la evaluación como atendida. El cliente consulta el estado desde su cuenta.
 3. **Administración del catálogo:** el personal crea, consulta, actualiza o elimina productos disponibles.
 
-Estados de solicitud propuestos: `Pendiente de revisión`, `En revisión`, `Requiere información`, `Aprobada`, `En desarrollo`, `Lista para entrega`, `Completada` y `Rechazada`. El equipo puede ajustar estos estados al implementar el flujo.
+Estados de solicitud: `Pendiente`, `Propuesta enviada`, `Cita confirmada`, `Atendida` y `Cancelada`. La solicitud coordina una evaluación y toma de medidas; no representa una compra ni una orden de fabricación.
 
 ## Entidades principales
 
 - **Productos:** nombre, descripción, categoría, imagen y disponibilidad.
-- **Solicitudes:** cliente, producto o servicio solicitado, descripción, estado, fecha de creación y notas de seguimiento.
+- **Solicitudes:** cliente, producto de interés, teléfono, disponibilidad preferida, descripción, estado, fecha de cita y notas de seguimiento.
 - **Perfiles:** usuario autenticado, nombre y rol asignado.
 
 Las solicitudes estarán relacionadas con el cliente que las creó y, cuando corresponda, con el producto solicitado. Para la demostración se utilizarán datos ficticios; no se pretende almacenar expedientes ni diagnósticos médicos.
@@ -46,44 +46,48 @@ Firebase es la plataforma propuesta para el proyecto. La aplicación no utilizar
 
 ## Estructura actual y organización prevista
 
-El sitio de partida contiene estas páginas y estilos:
+El sitio mantiene las páginas públicas originales y añade vistas conectadas a Firebase:
 
 - `index.html` — página de inicio
-- `productos.html` — catálogo estático
+- `productos.html` — catálogo visual del sitio, con productos cargados desde Firestore
 - `nosotros.html` — información de la organización
 - `contacto.html` — formulario estático de contacto, candidato a convertirse en formulario de solicitud
 - `css/` — hojas de estilo por página y estilos compartidos
 - `img/` — imágenes del sitio
 
-Durante la ampliación se agregarán módulos JavaScript para la configuración de Firebase, autenticación, acceso a datos y comportamiento de la interfaz. La estructura final se documentará cuando esté implementada.
+Los módulos de autenticación, acceso a Firestore y comportamiento de cada vista están organizados dentro de `js/`.
 
 ## Requisitos para probar la aplicación
 
-La versión actual del sitio estático puede abrirse en un navegador. Para ejecutar las funciones que dependen de Firebase será necesario configurar el proyecto de Firebase y sus credenciales de aplicación.
+La aplicación usa el proyecto Firebase configurado en `js/firebase.js`. Para que Authentication y Firestore funcionen, sirve los archivos desde un servidor local y mantén publicadas las reglas correspondientes.
 
 1. Clona el repositorio del equipo.
-2. Configura un proyecto de Firebase con Authentication y Cloud Firestore.
-3. Completa la configuración de Firebase en el módulo de configuración de la aplicación, sin incluir credenciales privilegiadas.
-4. Sirve los archivos con un servidor local estático, por ejemplo Live Server en Visual Studio Code.
-5. Usa las cuentas de demostración que se proporcionarán durante la entrega. No publiques contraseñas en este repositorio.
+2. Sirve los archivos con un servidor local estático, por ejemplo Live Server en Visual Studio Code.
+3. Usa cuentas de demostración de Firebase Authentication. El personal debe tener `role: "personal"` en `usuarios/{uid}`.
+4. Publica `firestore.rules` en el proyecto Firebase antes de probar solicitudes y productos.
+5. Si la colección `productos` está vacía, inicia sesión como personal y carga los productos de ejemplo desde **Catálogo**.
 
-> Las instrucciones definitivas, configuración requerida y credenciales de demostración se añadirán cuando la integración esté lista.
+No publiques contraseñas ni credenciales privilegiadas en este repositorio.
 
 ## Módulo de solicitudes y seguimiento
 
-- `mis-solicitudes.html` — vista del cliente: formulario para crear/editar solicitudes y "Mis solicitudes" (filtro por estado, orden por fecha, conteo de pendientes, cancelar y eliminar cuando el estado lo permite). Acepta `?producto=ID` para llegar con un producto preseleccionado desde el catálogo.
-- `panel-personal.html` — vista del personal: indicadores por estado, búsqueda, filtros y orden, cambio de estado según el flujo del taller y notas de seguimiento visibles para el cliente.
-- `js/mis-solicitudes.js` y `js/panel-personal.js` — protegen la página por rol (`protegerPagina`, `configurarCerrarSesion`) e inician cada vista.
+- `productos.html` — catálogo público dinámico. Cada producto disponible lleva a `mis-solicitudes.html?producto=ID` para solicitar una evaluación.
+- `mis-solicitudes.html` — vista del cliente: formulario para coordinar una evaluación y su historial. Permite cancelar, editar o eliminar mientras el estado lo permite.
+- `panel-personal.html` — vista de solicitudes del personal: indicadores, filtros y tabla. El detalle permite acordar fecha y hora, reprogramar con una nota, marcar la evaluación como atendida o cancelar.
+- `gestion-catalogo.html` — vista independiente del personal para buscar, filtrar, crear, editar, eliminar y cambiar la disponibilidad de productos; el formulario aparece al agregar o editar.
+- `js/mis-solicitudes.js`, `js/panel-personal.js` y `js/gestion-catalogo.js` — protegen las vistas por rol (`protegerPagina`, `configurarCerrarSesion`) e inician cada módulo.
+- `js/catalogo.js` — genera las tarjetas del catálogo público desde Firestore sin escribir en la base de datos.
+- `js/gestion-productos.js` y `js/productos-iniciales.js` — CRUD del catálogo y datos de ejemplo que solo el personal puede cargar.
 - `js/solicitudes/` — `estados.js` (flujo y reglas de negocio), `validaciones.js`, `procesamiento.js` (búsqueda, filtros, orden e indicadores), `solicitudes-datos.js` (servicio de Firestore: cada función devuelve `{ exito, data }` o `{ exito: false, error }`), `sesion.js` (usuario y perfil), `ui-comun.js`, `vista-cliente.js` y `vista-personal.js` (interfaz).
-- `firestore.rules` — reglas de `usuarios`, `productos` (provisionales) y `solicitudes`.
+- `firestore.rules` — reglas de acceso para `usuarios`, `productos` y `solicitudes`.
 
-Documento `solicitudes/{id}`: `clienteId`, `clienteNombre`, `clienteEmail`, `tipo` (`producto` | `evaluacion`), `productoId`, `productoNombre`, `telefono`, `descripcion`, `estado`, `notas` (lista de `{ texto, autor, estado, fecha }`), `creadoEn`, `actualizadoEn`.
+Documento `solicitudes/{id}`: `clienteId`, `clienteNombre`, `clienteEmail`, `tipo` (`producto` | `evaluacion`), `productoId`, `productoNombre`, `telefono`, `preferenciaHorario`, `descripcion`, `fechaPreferida`, `fechaPropuesta`, `fechaCita`, `estado`, `notas` (lista de `{ texto, autor, estado, fecha }`), `creadoEn`, `actualizadoEn`.
 
-Flujo del personal: `Pendiente de revisión → En revisión → Requiere información / Aprobada / Rechazada → En desarrollo → Lista para entrega → Completada`. Al pasar a `Requiere información` la nota es obligatoria; cuando el cliente edita su solicitud vuelve a `Pendiente de revisión`. El cliente solo cancela mientras está `Pendiente de revisión`.
+Flujo: el cliente envía una fecha y hora preferidas con un selector de calendario. El personal puede confirmarlas directamente o enviar una alternativa (`Propuesta enviada`). El cliente acepta la propuesta para confirmar la cita o envía otra fecha, que vuelve a `Pendiente` para revisión. Al finalizar, el personal la marca como `Atendida`; cliente o personal pueden cancelarla antes. Así se coordina desde la aplicación sin depender de una llamada.
 
-Las reglas verifican además: cada cliente lee y modifica solo sus solicitudes; el estado inicial y los campos se validan al crear; el producto relacionado debe existir; el personal no puede cambiar los datos del cliente ni saltarse estados; las notas solo se agregan (no se editan ni borran); las solicitudes cerradas ya no se modifican. El rol se lee de `usuarios/{uid}.role` (`cliente` o `personal`).
+Las reglas verifican además: cada cliente autenticado con perfil `cliente` crea y consulta sus solicitudes; el producto relacionado debe existir y estar disponible; el personal no puede cambiar los datos del cliente ni saltarse estados; solo confirma citas con una fecha válida; las notas solo se agregan (no se editan ni borran); una evaluación atendida no puede reabrirse. El rol se lee de `usuarios/{uid}.role` (`cliente` o `personal`).
 
-Datos iniciales: si un cliente no tiene solicitudes, "Mis solicitudes" ofrece el botón **Crear solicitudes de ejemplo**, que genera tres solicitudes ficticias a su nombre.
+Datos de demostración: el catálogo ofrece al personal cargar los 12 productos de ejemplo cuando la colección está vacía. Si un cliente no tiene solicitudes, "Mis solicitudes" ofrece el botón **Crear solicitudes de ejemplo**, que genera tres solicitudes ficticias a su nombre.
 
 ## Seguridad y datos
 

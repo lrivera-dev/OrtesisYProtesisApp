@@ -19,6 +19,7 @@ import {
 import { db } from "../firebase.js";
 import { ESTADOS } from "./estados.js";
 import { normalizarTelefono } from "./validaciones.js";
+import { productoDisponible } from "../productos-utiles.js";
 
 const COLECCION = "solicitudes";
 const COLECCION_PRODUCTOS = "productos";
@@ -34,14 +35,16 @@ function mapearDocumentos(snapshot) {
 }
 
 // Campos que el cliente puede escribir al crear o editar.
-function datosEditables({ tipo, productoId, productoNombre, telefono, descripcion }) {
+function datosEditables({ tipo, productoId, productoNombre, telefono, descripcion, preferenciaHorario, fechaPreferida }) {
     const esProducto = tipo === "producto";
     return {
         tipo,
         productoId: esProducto ? productoId : null,
         productoNombre: esProducto ? productoNombre : "Evaluación personalizada",
         telefono: normalizarTelefono(telefono),
-        descripcion: descripcion.trim()
+        descripcion: descripcion.trim(),
+        preferenciaHorario: (preferenciaHorario ?? "").trim(),
+        fechaPreferida: Timestamp.fromDate(fechaPreferida instanceof Date ? fechaPreferida : new Date(fechaPreferida))
     };
 }
 
@@ -52,6 +55,8 @@ function nuevaSolicitud(usuario, perfil, datos) {
         clienteEmail: usuario.email,
         ...datosEditables(datos),
         estado: ESTADOS.PENDIENTE,
+        fechaPropuesta: null,
+        fechaCita: null,
         notas: [],
         creadoEn: serverTimestamp(),
         actualizadoEn: serverTimestamp()
@@ -63,7 +68,7 @@ export async function obtenerProductosDisponibles() {
     try {
         const snapshot = await getDocs(collection(db, COLECCION_PRODUCTOS));
         const data = mapearDocumentos(snapshot)
-            .filter((p) => p.disponible !== false)
+            .filter(productoDisponible)
             .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
         return { exito: true, data };
     } catch (error) {
@@ -112,7 +117,7 @@ export async function obtenerSolicitudPorId(id) {
     }
 }
 
-// Cliente: edita su solicitud. Si se le había pedido información, vuelve a "Pendiente de revisión".
+// Cliente: edita los datos mientras la solicitud siga pendiente.
 export async function actualizarSolicitudCliente(id, datos) {
     try {
         await updateDoc(doc(db, COLECCION, id), {
@@ -138,6 +143,32 @@ export async function cancelarSolicitud(id) {
     }
 }
 
+// Cliente: acepta el horario propuesto por el personal o envía otra fecha preferida.
+export async function responderPropuestaCliente(id, { aceptar, fechaPreferida }) {
+    try {
+        const ref = doc(db, COLECCION, id);
+        const snapshot = await getDoc(ref);
+        if (!snapshot.exists()) return { exito: false, error: "La solicitud no existe.", codigo: "not-found" };
+        const solicitud = snapshot.data();
+        if (solicitud.estado !== ESTADOS.PROPUESTA_ENVIADA || !solicitud.fechaPropuesta) {
+            return { exito: false, error: "La propuesta ya no está disponible.", codigo: "failed-precondition" };
+        }
+
+        const cambios = aceptar
+            ? { estado: ESTADOS.CITA_CONFIRMADA, fechaCita: solicitud.fechaPropuesta }
+            : {
+                estado: ESTADOS.PENDIENTE,
+                fechaPreferida: Timestamp.fromDate(fechaPreferida instanceof Date ? fechaPreferida : new Date(fechaPreferida)),
+                fechaPropuesta: null,
+                fechaCita: null
+            };
+        await updateDoc(ref, { ...cambios, actualizadoEn: serverTimestamp() });
+        return { exito: true };
+    } catch (error) {
+        return fallo(error);
+    }
+}
+
 // Borrado físico (permanente). Las reglas solo lo permiten en estados sin trabajo del taller.
 export async function eliminarSolicitud(id) {
     try {
@@ -149,12 +180,14 @@ export async function eliminarSolicitud(id) {
 }
 
 // Personal: cambia el estado y/o agrega una nota de seguimiento al final del historial.
-export async function actualizarSeguimiento(id, { nuevoEstado, nota, autor }) {
+export async function actualizarSeguimiento(id, { nuevoEstado, nota, autor, fechaCita, fechaPropuesta }) {
     try {
         const cambios = {
             estado: nuevoEstado,
             actualizadoEn: serverTimestamp()
         };
+        if (fechaCita !== undefined) cambios.fechaCita = fechaCita;
+        if (fechaPropuesta !== undefined) cambios.fechaPropuesta = fechaPropuesta;
         if (nota) {
             cambios.notas = arrayUnion({
                 texto: nota.trim(),
@@ -176,29 +209,33 @@ export async function crearSolicitudesDemo(usuario, perfil, productos) {
         {
             tipo: "evaluacion",
             telefono: "7614-0404",
-            descripcion: "Quisiera agendar una evaluación para una órtesis de tobillo después de un esguince."
+            descripcion: "Quisiera una evaluación para saber qué órtesis de tobillo se adapta a mis necesidades."
         },
         {
             tipo: "producto",
             producto: productos[0],
             telefono: "2250-1234",
-            descripcion: "Me interesa conocer tiempos de entrega y opciones de ajuste para este producto."
+            descripcion: "Me interesa este producto y quisiera coordinar una evaluación y toma de medidas."
         },
         {
             tipo: "producto",
             producto: productos[1] ?? productos[0],
             telefono: "6012-9876",
-            descripcion: "Necesito información sobre la adaptación y las citas de calibración del dispositivo."
+            descripcion: "Quisiera saber si este producto puede adaptarse a mi caso y agendar una evaluación."
         }
     ].filter((e) => e.tipo === "evaluacion" || e.producto);
 
     try {
         const lote = writeBatch(db);
-        for (const ejemplo of ejemplos) {
+        for (const [indice, ejemplo] of ejemplos.entries()) {
+            const fechaPreferida = new Date();
+            fechaPreferida.setDate(fechaPreferida.getDate() + 7 + indice);
+            fechaPreferida.setHours(10 + indice, 0, 0, 0);
             lote.set(doc(solicitudesRef), nuevaSolicitud(usuario, perfil, {
                 ...ejemplo,
                 productoId: ejemplo.producto?.id,
-                productoNombre: ejemplo.producto?.nombre
+                productoNombre: ejemplo.producto?.nombre,
+                fechaPreferida
             }));
         }
         await lote.commit();

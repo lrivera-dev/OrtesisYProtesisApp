@@ -2,6 +2,7 @@ import { registerUser } from "./firebase.js";
 
 const registerForm = document.getElementById("registerForm");
 const authStatus = document.getElementById("authStatus");
+const productoSolicitado = new URLSearchParams(window.location.search).get("producto");
 
 registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -20,7 +21,10 @@ registerForm.addEventListener("submit", async (event) => {
         await registerUser({ nombre, apellido, email, password });
 
         authStatus.textContent = "Cuenta creada. Abriendo tus solicitudes…";
-        window.location.assign("mis-solicitudes.html");
+        const destino = productoSolicitado
+            ? `mis-solicitudes.html?producto=${encodeURIComponent(productoSolicitado)}`
+            : "mis-solicitudes.html";
+        window.location.assign(destino);
     } catch (error) {
         if (error.code === "auth/email-already-in-use") {
             authStatus.textContent = "Ya existe una cuenta con ese correo.";

@@ -25,7 +25,7 @@ export function filtrarSolicitudes(solicitudes, { texto = "", estado = "todos" }
             || (estado === "pendientes" ? esPendiente(s.estado) : s.estado === estado);
         if (!coincideEstado) return false;
         if (!busqueda) return true;
-        const campos = [s.clienteNombre, s.clienteEmail, s.productoNombre, s.descripcion, s.codigo];
+        const campos = [s.clienteNombre, s.clienteEmail, s.productoNombre, s.descripcion, s.preferenciaHorario, s.codigo];
         return campos.some((campo) => normalizar(campo).includes(busqueda));
     });
 }

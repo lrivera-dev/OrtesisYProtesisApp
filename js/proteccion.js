@@ -15,12 +15,20 @@ const vistaPorRol = {
     personal: "panel-personal.html"
 };
 
+function rutaLogin() {
+    const productoId = new URLSearchParams(window.location.search).get("producto");
+    if (window.location.pathname.endsWith("/mis-solicitudes.html") && productoId) {
+        return `login.html?producto=${encodeURIComponent(productoId)}`;
+    }
+    return "login.html";
+}
+
 export function protegerPagina(rolesPermitidos) {
     let ultimoUidProcesado = null;
 
     return observeAuth(async (user) => {
         if (!user) {
-            window.location.replace("login.html");
+            window.location.replace(rutaLogin());
             return;
         }
 
@@ -37,7 +45,7 @@ export function protegerPagina(rolesPermitidos) {
 
             if (!profileSnapshot.exists()) {
                 await logoutUser();
-                window.location.replace("login.html");
+                window.location.replace(rutaLogin());
                 return;
             }
 
@@ -55,7 +63,7 @@ export function protegerPagina(rolesPermitidos) {
             }
         } catch (error) {
             console.error("No se pudo validar la sesión:", error);
-            window.location.replace("login.html");
+            window.location.replace(rutaLogin());
         }
     });
 }

@@ -38,32 +38,35 @@
         <section class="sol-hero">
             <p class="sol-etiqueta"><span aria-hidden="true"></span>Seguimiento de solicitudes</p>
             <h1>Mis solicitudes</h1>
-            <p>Solicita una evaluación o un producto del catálogo y consulta el avance del taller desde tu cuenta.</p>
+            <p>Solicita coordinar una evaluación, revisa la confirmación de tu cita y consulta su estado.</p>
         </section>
 
         <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
 
         <div id="contenido" class="sol-layout" hidden>
             <section class="tarjeta form-solicitud" aria-labelledby="titulo-form">
-                <h2 id="titulo-form">Nueva solicitud</h2>
-                <p class="ayuda">Usa datos ficticios: no incluyas diagnósticos ni historiales clínicos.</p>
+                <h2 id="titulo-form">Solicitar una evaluación</h2>
+                <p class="ayuda">Esta solicitud sirve para coordinar una cita; no es un pedido de fabricación. No incluyas diagnósticos ni historiales clínicos.</p>
 
                 <form id="form-solicitud" novalidate>
-                    <fieldset class="campo">
-                        <legend>Tipo de solicitud</legend>
-                        <div class="opciones-tipo">
-                            <label><input type="radio" name="tipo" value="producto" checked> Producto del catálogo</label>
-                            <label><input type="radio" name="tipo" value="evaluacion"> Evaluación personalizada</label>
-                        </div>
-                        <small class="error" id="error-tipo"></small>
-                    </fieldset>
+                    <p class="ayuda" id="ayuda-tipo-solicitud"></p>
+                    <div id="producto-seleccionado" class="producto-solicitud" hidden></div>
+                    <small class="error" id="error-productoId"></small>
+                    <a id="enlace-catalogo" href="productos.html" class="btn btn-secundario enlace-catalogo">Elegir un producto del catálogo</a>
 
-                    <div class="campo" id="campo-producto">
-                        <label for="productoId">Producto</label>
-                        <select id="productoId" name="productoId" aria-describedby="error-productoId">
-                            <option value="">Cargando productos…</option>
-                        </select>
-                        <small class="error" id="error-productoId"></small>
+                    <div class="campo">
+                        <label for="fecha-preferida">Fecha y hora que prefieres</label>
+                        <input type="datetime-local" id="fecha-preferida" name="fechaPreferida" required
+                            aria-describedby="ayuda-fecha-preferida error-fecha-preferida">
+                        <small class="ayuda" id="ayuda-fecha-preferida">Es una preferencia, todavía no confirma la cita.</small>
+                        <small class="error" id="error-fecha-preferida"></small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="preferencia-horario">Otras opciones de días u horarios (opcional)</label>
+                        <input type="text" id="preferencia-horario" name="preferenciaHorario" maxlength="150"
+                            placeholder="Ej. también puedo jueves por la tarde" aria-describedby="error-preferencia-horario">
+                        <small class="error" id="error-preferencia-horario"></small>
                     </div>
 
                     <div class="campo">
@@ -74,7 +77,7 @@
                     </div>
 
                     <div class="campo">
-                        <label for="descripcion">Describe lo que necesitas</label>
+                        <label for="descripcion">¿Qué evaluación necesitas?</label>
                         <textarea id="descripcion" name="descripcion" rows="5" maxlength="500"
                             aria-describedby="contador-descripcion error-descripcion"></textarea>
                         <small class="contador" id="contador-descripcion">0 / 500</small>
@@ -82,7 +85,7 @@
                     </div>
 
                     <div class="form-acciones">
-                        <button type="submit" class="btn btn-primario" id="btn-enviar">Enviar solicitud</button>
+                        <button type="submit" class="btn btn-primario" id="btn-enviar">Solicitar evaluación</button>
                         <button type="button" class="btn btn-secundario" id="btn-cancelar-edicion" hidden>Cancelar
                             edición</button>
                     </div>
@@ -93,7 +96,10 @@
             <section class="tarjeta" aria-labelledby="titulo-lista">
                 <div class="lista-cabecera">
                     <h2 id="titulo-lista">Historial</h2>
-                    <div class="indicadores" id="indicadores-cliente"></div>
+                    <div class="lista-acciones-cliente">
+                        <div class="indicadores" id="indicadores-cliente"></div>
+                        <button type="button" class="btn btn-secundario" id="btn-recargar-solicitudes">Actualizar</button>
+                    </div>
                 </div>
 
                 <div class="filtros">

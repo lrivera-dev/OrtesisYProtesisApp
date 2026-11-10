@@ -65,7 +65,7 @@ service cloud.firestore {
     }
 
     // ---------- Productos (módulo de catálogo) ----------
-    // Provisional: lectura pública y escritura solo para personal. El módulo de catálogo agrega validaciones.
+    // El catálogo es público; solo el personal puede administrar sus documentos.
 
     match /productos/{productoId} {
       allow read: if true;
@@ -84,14 +84,19 @@ service cloud.firestore {
         return request.resource.data.diff(resource.data).affectedKeys();
       }
 
+      function disponibilidadValida(producto) {
+        return (!('disponibilidad' in producto)
+            || (producto.disponibilidad is bool && producto.disponibilidad == true))
+          && (!('disponible' in producto)
+            || (producto.disponible is bool && producto.disponible == true));
+      }
+
       // Campos que el cliente escribe al crear o editar.
       function productoSolicitable(productoId, productoNombre) {
         let rutaProducto = /databases/$(database)/documents/productos/$(productoId);
         return exists(rutaProducto)
           && get(rutaProducto).data.nombre == productoNombre
-          && (!('disponible' in get(rutaProducto).data)
-            || (get(rutaProducto).data.disponible is bool
-              && get(rutaProducto).data.disponible == true));
+          && disponibilidadValida(get(rutaProducto).data);
       }
 
       function camposEditablesValidos(d) {
@@ -101,6 +106,10 @@ service cloud.firestore {
           && d.descripcion is string
           && d.descripcion.size() >= 20
           && d.descripcion.size() <= 500
+          && d.preferenciaHorario is string
+          && d.preferenciaHorario.size() <= 150
+          && d.fechaPreferida is timestamp
+          && d.fechaPreferida > request.time
           && d.productoNombre is string
           && d.productoNombre.size() > 0
           && d.productoNombre.size() <= 150
@@ -112,18 +121,34 @@ service cloud.firestore {
           );
       }
 
-      // Flujo del taller: estado actual -> estados permitidos para el personal.
-      // Los estados cerrados (Completada, Rechazada, Cancelada) no aparecen: ya no se modifican.
+      // Flujo de coordinación de citas: estado actual -> estados permitidos para el personal.
       function transicionValida(de, a) {
         let flujo = {
-          'Pendiente de revisión': ['En revisión'],
-          'En revisión': ['Requiere información', 'Aprobada', 'Rechazada'],
-          'Requiere información': ['En revisión', 'Rechazada'],
-          'Aprobada': ['En desarrollo'],
-          'En desarrollo': ['Lista para entrega'],
-          'Lista para entrega': ['Completada']
+          'Pendiente': ['Propuesta enviada', 'Cita confirmada', 'Cancelada'],
+          'Propuesta enviada': ['Cancelada'],
+          'Cita confirmada': ['Atendida', 'Cancelada'],
+          'Atendida': [],
+          'Cancelada': []
         };
-        return de in flujo && (a == de || a in flujo[de]);
+        return (de == 'Propuesta enviada' && a == de)
+          || (de in flujo && a in flujo[de]);
+      }
+
+      function fechaCitaValida(d) {
+        return (d.estado == 'Pendiente' && d.fechaCita == null
+            && (!('fechaPropuesta' in d) || d.fechaPropuesta == null))
+          || (d.estado == 'Propuesta enviada' && d.fechaCita == null
+            && d.fechaPropuesta is timestamp && d.fechaPropuesta > request.time)
+          || (d.estado == 'Cita confirmada' && d.fechaCita is timestamp && d.fechaCita > request.time
+            && ((('fechaPreferida' in d) && d.fechaCita == d.fechaPreferida)
+              || (('fechaPropuesta' in d) && d.fechaCita == d.fechaPropuesta)
+              || (!('fechaPreferida' in d) && !('fechaPropuesta' in d))))
+          || (d.estado == 'Atendida' && d.fechaCita is timestamp && d.fechaCita <= request.time
+            && ((('fechaPreferida' in d) && d.fechaCita == d.fechaPreferida)
+              || (('fechaPropuesta' in d) && d.fechaCita == d.fechaPropuesta)
+              || (!('fechaPreferida' in d) && !('fechaPropuesta' in d))))
+          || (d.estado == 'Cancelada' && (d.fechaCita == null || d.fechaCita is timestamp)
+            && (!('fechaPropuesta' in d) || d.fechaPropuesta == null || d.fechaPropuesta is timestamp));
       }
 
       function notaValida(n) {
@@ -147,36 +172,63 @@ service cloud.firestore {
           && despues.hasAll(antes)
           && !(despues[despues.size() - 1] in antes)
           && notaValida(despues[despues.size() - 1]);
-        let pideInformacion = request.resource.data.estado == 'Requiere información'
-          && resource.data.estado != 'Requiere información';
-        return (despues == antes && !pideInformacion) || agregaNota;
+        return despues == antes || agregaNota;
       }
 
-      // Cliente: edita solo si está pendiente o se le pidió información; vuelve a "Pendiente de revisión".
+      // Cliente: puede editar los datos solo mientras la solicitud siga pendiente.
       function clienteEdita() {
         return esDuenio()
-          && resource.data.estado in ['Pendiente de revisión', 'Requiere información']
-          && cambios().hasOnly(['tipo', 'productoId', 'productoNombre', 'telefono', 'descripcion', 'estado', 'actualizadoEn'])
-          && request.resource.data.estado == 'Pendiente de revisión'
+          && resource.data.estado == 'Pendiente'
+          && cambios().hasOnly(['tipo', 'productoId', 'productoNombre', 'telefono', 'descripcion', 'preferenciaHorario', 'fechaPreferida', 'estado', 'actualizadoEn'])
+          && request.resource.data.estado == 'Pendiente'
           && request.resource.data.actualizadoEn == request.time
           && camposEditablesValidos(request.resource.data);
       }
 
-      // Cliente: cancela solo mientras está pendiente de revisión.
+      // Cliente: cancela mientras espera coordinación o tiene una cita confirmada.
       function clienteCancela() {
         return esDuenio()
-          && resource.data.estado == 'Pendiente de revisión'
+          && resource.data.estado in ['Pendiente', 'Propuesta enviada', 'Cita confirmada']
           && request.resource.data.estado == 'Cancelada'
           && cambios().hasOnly(['estado', 'actualizadoEn'])
           && request.resource.data.actualizadoEn == request.time;
       }
 
+      function clienteAceptaPropuesta() {
+        return esDuenio()
+          && resource.data.estado == 'Propuesta enviada'
+          && resource.data.fechaPropuesta is timestamp
+          && resource.data.fechaPropuesta > request.time
+          && request.resource.data.estado == 'Cita confirmada'
+          && request.resource.data.fechaCita == resource.data.fechaPropuesta
+          && request.resource.data.actualizadoEn == request.time
+          && cambios().hasOnly(['estado', 'fechaCita', 'actualizadoEn']);
+      }
+
+      function clienteProponeOtraFecha() {
+        return esDuenio()
+          && resource.data.estado == 'Propuesta enviada'
+          && request.resource.data.estado == 'Pendiente'
+          && request.resource.data.fechaPreferida is timestamp
+          && request.resource.data.fechaPreferida > request.time
+          && request.resource.data.fechaPropuesta == null
+          && request.resource.data.fechaCita == null
+          && request.resource.data.actualizadoEn == request.time
+          && cambios().hasOnly(['estado', 'fechaPreferida', 'fechaPropuesta', 'fechaCita', 'actualizadoEn']);
+      }
+
       // Personal: cambia estado siguiendo el flujo y agrega notas; no toca los datos del cliente.
       function personalActualiza() {
         return esPersonal()
-          && cambios().hasOnly(['estado', 'notas', 'actualizadoEn'])
+          && cambios().hasOnly(['estado', 'notas', 'fechaCita', 'fechaPropuesta', 'actualizadoEn'])
           && request.resource.data.actualizadoEn == request.time
           && transicionValida(resource.data.estado, request.resource.data.estado)
+          && fechaCitaValida(request.resource.data)
+          && (!cambios().hasAny(['fechaCita'])
+            || (resource.data.estado == 'Pendiente' && request.resource.data.estado == 'Cita confirmada'))
+          && (!cambios().hasAny(['fechaPropuesta']) || request.resource.data.estado == 'Propuesta enviada')
+          && (resource.data.estado in ['Pendiente', 'Propuesta enviada', 'Cita confirmada']
+            || request.resource.data.fechaCita == resource.data.fechaCita)
           && notasValidas();
       }
 
@@ -188,27 +240,33 @@ service cloud.firestore {
       allow create: if esCliente()
         && request.resource.data.keys().hasOnly([
           'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
-          'telefono', 'descripcion', 'estado', 'notas', 'creadoEn', 'actualizadoEn'])
+          'telefono', 'descripcion', 'preferenciaHorario', 'fechaPreferida', 'fechaPropuesta',
+          'estado', 'fechaCita', 'notas', 'creadoEn', 'actualizadoEn'])
         && request.resource.data.keys().hasAll([
           'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
-          'telefono', 'descripcion', 'estado', 'notas', 'creadoEn', 'actualizadoEn'])
+          'telefono', 'descripcion', 'preferenciaHorario', 'fechaPreferida', 'fechaPropuesta',
+          'estado', 'fechaCita', 'notas', 'creadoEn', 'actualizadoEn'])
         && request.resource.data.clienteId == request.auth.uid
         && request.resource.data.clienteEmail == request.auth.token.email
         && request.resource.data.clienteNombre is string
         && request.resource.data.clienteNombre.size() > 0
         && request.resource.data.clienteNombre.size() <= 100
-        && request.resource.data.estado == 'Pendiente de revisión'
+        && request.resource.data.estado == 'Pendiente'
+        && request.resource.data.fechaPreferida is timestamp
+        && request.resource.data.fechaPreferida > request.time
+        && request.resource.data.fechaPropuesta == null
+        && request.resource.data.fechaCita == null
         && request.resource.data.notas == []
         && request.resource.data.creadoEn == request.time
         && request.resource.data.actualizadoEn == request.time
         && camposEditablesValidos(request.resource.data);
 
-      allow update: if clienteEdita() || clienteCancela() || personalActualiza();
+      allow update: if clienteEdita() || clienteCancela() || clienteAceptaPropuesta()
+        || clienteProponeOtraFecha() || personalActualiza();
 
-      // Eliminación: el cliente borra las que nadie ha revisado o que canceló;
-      // el personal solo borra registros rechazados o cancelados.
-      allow delete: if (esDuenio() && resource.data.estado in ['Pendiente de revisión', 'Cancelada'])
-        || (esPersonal() && resource.data.estado in ['Rechazada', 'Cancelada']);
+      // Solo se borran solicitudes pendientes o canceladas por su dueño; el personal elimina las canceladas.
+      allow delete: if (esDuenio() && resource.data.estado in ['Pendiente', 'Cancelada'])
+        || (esPersonal() && resource.data.estado == 'Cancelada');
     }
   }
 }
