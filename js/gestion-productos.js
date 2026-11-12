@@ -53,6 +53,7 @@ const ETIQUETAS = {
 };
 
 let listaProductos = [];
+const TAMANO_MAX_IMAGEN = 700 * 1024;
 
 const convertirABase64 = (archivo) => {
     return new Promise((resolve, reject) => {
@@ -189,6 +190,11 @@ async function guardarProducto(evento) {
     try {
         let urlImagenFinal = el.imagenUrlExistente.value; 
         const archivoImagen = el.imagen.files[0];
+        if (archivoImagen && archivoImagen.size > TAMANO_MAX_IMAGEN) {
+            mostrarMensaje(el.mensaje, "error", "La imagen debe pesar menos de 700 KB. Usa una imagen más liviana.");
+            el.imagen.focus();
+            return;
+        }
 
         if (archivoImagen) {
             mostrarMensaje(el.mensaje, "carga", "Procesando imagen...");
