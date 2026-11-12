@@ -1,5 +1,3 @@
-// Validaciones del formulario de solicitud y de las notas del personal.
-
 export const LIMITES = Object.freeze({
     descripcionMin: 20,
     descripcionMax: 500,

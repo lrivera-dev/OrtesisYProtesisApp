@@ -1,6 +1,3 @@
-// Servicio de la colección `solicitudes`: crear, consultar (todas, propias y por ID), actualizar y eliminar.
-// Igual que en clase: cada función usa try/catch y devuelve { exito: true, data } o { exito: false, error }.
-// La interfaz no llama a Firestore directamente: usa estas funciones.
 import {
     collection,
     doc,

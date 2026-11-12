@@ -1,4 +1,3 @@
-
 import { obtenerSesion } from "./sesion.js";
 import {
     obtenerProductosDisponibles,
@@ -251,8 +250,6 @@ async function enviarFormulario(evento) {
         : "Solicitud enviada. El personal se pondrá en contacto para coordinar la cita.");
     await cargarSolicitudes();
 }
-
-// ---------- Lista "Mis solicitudes" ----------
 
 function tarjetaSolicitud(s) {
     const acciones = crear("div", { clase: "tarjeta-acciones" });

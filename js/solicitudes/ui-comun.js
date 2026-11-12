@@ -1,4 +1,3 @@
-// Utilidades de interfaz compartidas por "Mis solicitudes" y el panel del personal.
 import { claseEstado } from "./estados.js";
 import { formatearFecha } from "./procesamiento.js";
 

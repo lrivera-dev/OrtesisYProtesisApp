@@ -1,4 +1,3 @@
-// Catálogo de demostración que el personal puede cargar desde su panel.
 export const PRODUCTOS_INICIALES = [
     { categoria: "rodillas", etiqueta: "ÓRTESIS DE RODILLA", imagen: "img/productos/protesis1.png", nombre: "Órtesis de Rodilla Post-Quirúrgica OrtoFlex Pro", descripcion: "Articulaciones policéntricas regulables en flexo-extensión con barras de duraluminio aeronáutico y almohadillas termoformadas.", specs: ["Rango 0°-120°", "Fijación milimétrica"], disponibilidad: true },
     { categoria: "rodillas", etiqueta: "ÓRTESIS DE RODILLA", imagen: "img/productos/protesis2.png", nombre: "Rodillera de Descarga Unicompartimental OsteoRelief", descripcion: "Sistema correctivo biomecánico de 3 puntos de palanca para artrosis de rodilla grado I-IV.", specs: ["Descarga 3 Puntos", "Alineación Asistida"], disponibilidad: true },

@@ -1,5 +1,3 @@
-// Procesamiento en JavaScript de la lista de solicitudes:
-// búsqueda, filtro por estado, orden por fecha e indicadores.
 import { LISTA_ESTADOS, esPendiente } from "./estados.js";
 
 function normalizar(texto) {
@@ -10,7 +8,6 @@ function normalizar(texto) {
         .replace(/[̀-ͯ]/g, "");
 }
 
-// Los Timestamp de Firestore tienen toMillis(); las fechas locales se aceptan también.
 export function aMilisegundos(fecha) {
     if (!fecha) return 0;
     if (typeof fecha.toMillis === "function") return fecha.toMillis();
@@ -38,7 +35,6 @@ export function ordenarPorFecha(solicitudes, orden = "recientes") {
     return copia;
 }
 
-// Conteo por estado para indicadores del panel.
 export function contarPorEstado(solicitudes) {
     const conteo = Object.fromEntries(LISTA_ESTADOS.map((estado) => [estado, 0]));
     for (const s of solicitudes) {

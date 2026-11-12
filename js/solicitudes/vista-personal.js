@@ -1,4 +1,3 @@
-// Interfaz del personal: tabla de solicitudes y detalle para coordinar cada evaluación.
 import { Timestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { obtenerSesion } from "./sesion.js";
 import { obtenerTodasLasSolicitudes, actualizarSeguimiento, eliminarSolicitud } from "./solicitudes-datos.js";
