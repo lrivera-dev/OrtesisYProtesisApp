@@ -4,45 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear cuenta | OrtoVida</title>
+    <title>Crear cuenta | Ortesis&Protesis</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/acceso.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
     <script type="module" src="js/registro.js"></script>
 </head>
 
-<body>
+<body class="body-acceso">
     <header class="acceso-header">
-        <a href="index.html" class="marca">Ortesis&Protesis</a>
-        <a href="index.html" class="volver">Volver al inicio</a>
+        <a href="index.html" class="marca">Ortesis<span>&</span>Protesis</a>
+        <a href="index.html" class="volver">← Volver al inicio</a>
     </header>
 
     <main class="acceso-main">
         <section class="auth-card">
-            <span class="etiqueta">Portal Ortesis&Protesis</span>
-            <h1>Crear cuenta</h1>
-            <p>Regístrate para enviar solicitudes y consultar su avance.</p>
+            <div class="auth-header">
+                <span class="etiqueta">Portal Ortesis&Protesis</span>
+                <h1>Crear cuenta</h1>
+                <p>Regístrate para enviar solicitudes y consultar su avance.</p>
+            </div>
 
             <p id="authStatus" class="auth-status" role="status" aria-live="polite"></p>
 
-            <form id="registerForm">
-                <label for="registerNombre">Nombre</label>
-                <input type="text" id="registerNombre" autocomplete="given-name" maxlength="60" required>
+            <form id="registerForm" class="auth-form">
+                <div class="campo">
+                    <label for="registerNombre">Nombre</label>
+                    <input type="text" id="registerNombre" placeholder="Tu nombre" autocomplete="given-name" maxlength="60" required>
+                </div>
 
-                <label for="registerApellido">Apellido</label>
-                <input type="text" id="registerApellido" autocomplete="family-name" maxlength="60" required>
+                <div class="campo">
+                    <label for="registerApellido">Apellido</label>
+                    <input type="text" id="registerApellido" placeholder="Tu apellido" autocomplete="family-name" maxlength="60" required>
+                </div>
 
-                <label for="registerEmail">Correo electrónico</label>
-                <input type="email" id="registerEmail" autocomplete="email" required>
+                <div class="campo">
+                    <label for="registerEmail">Correo electrónico</label>
+                    <input type="email" id="registerEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+                </div>
 
-                <label for="registerPassword">Contraseña</label>
-                <input type="password" id="registerPassword" autocomplete="new-password" minlength="6" required>
+                <div class="campo">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+                </div>
 
-                <button type="submit">Crear cuenta</button>
+                <button type="submit" class="btn-primario">Crear cuenta</button>
             </form>
 
             <p class="auth-link">
-                ¿Ya tienes cuenta?
-                <a href="login.html">Iniciar sesión</a>
+                ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
             </p>
         </section>
     </main>

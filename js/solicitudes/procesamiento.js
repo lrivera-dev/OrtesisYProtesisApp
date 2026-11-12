@@ -21,8 +21,7 @@ export function aMilisegundos(fecha) {
 export function filtrarSolicitudes(solicitudes, { texto = "", estado = "todos" } = {}) {
     const busqueda = normalizar(texto.trim());
     return solicitudes.filter((s) => {
-        const coincideEstado = estado === "todos"
-            || (estado === "pendientes" ? esPendiente(s.estado) : s.estado === estado);
+        const coincideEstado = estado === "todos" || s.estado === estado;
         if (!coincideEstado) return false;
         if (!busqueda) return true;
         const campos = [s.clienteNombre, s.clienteEmail, s.productoNombre, s.descripcion, s.preferenciaHorario, s.codigo];

@@ -445,7 +445,6 @@ async function ejecutarAccion(solicitud, accion, boton) {
 function pintarFiltroEstados() {
     el.filtroEstado.replaceChildren(
         crear("option", { texto: "Todos", atributos: { value: "todos" } }),
-        crear("option", { texto: "Pendientes", atributos: { value: "pendientes" } }),
         ...LISTA_ESTADOS.map((e) => crear("option", { texto: e, atributos: { value: e } }))
     );
 }
