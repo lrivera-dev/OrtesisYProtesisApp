@@ -21,7 +21,7 @@ export function filtrarSolicitudes(solicitudes, { texto = "", estado = "todos" }
         const coincideEstado = estado === "todos" || s.estado === estado;
         if (!coincideEstado) return false;
         if (!busqueda) return true;
-        const campos = [s.clienteNombre, s.clienteEmail, s.productoNombre, s.descripcion, s.preferenciaHorario, s.codigo];
+        const campos = [s.clienteNombre, s.clienteEmail, s.productoNombre, s.descripcion, s.preferenciaHorario, `SOL-${(s.id ?? "").slice(0, 6).toUpperCase()}`];
         return campos.some((campo) => normalizar(campo).includes(busqueda));
     });
 }
