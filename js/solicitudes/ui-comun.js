@@ -99,7 +99,7 @@ export function confirmar(titulo, detalle, textoAceptar = "Confirmar") {
     });
 }
 
-// Muestra el correo del usuario junto al botón de cierre de sesión del encabezado.
-export function pintarUsuario(contenedor, usuario) {
-    contenedor.textContent = usuario?.email ?? "";
+export function pintarUsuario(contenedor, usuario, perfil) {
+    const nombre = [perfil?.nombre, perfil?.apellido].filter(Boolean).join(" ") || usuario?.email;
+    contenedor.textContent = nombre ? `Sesión iniciada · ${nombre}` : "";
 }

@@ -879,7 +879,7 @@
 }
 
 @media (max-width: 768px) {
-    .sesion .usuario-correo {
+    .sesion:not(.sesion-publica) .usuario-correo {
         display: none;
     }
 

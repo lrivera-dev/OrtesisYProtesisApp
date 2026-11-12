@@ -169,9 +169,16 @@ function mostrarErrores(errores) {
     else if (primero) el.form.elements[primero]?.focus?.();
 }
 
-function limpiarFormulario() {
+function limpiarFormulario({ reiniciarProducto = false } = {}) {
     el.form.reset();
     estado.editandoId = null;
+    if (reiniciarProducto) {
+        estado.tipoInicial = "evaluacion";
+        estado.productoInicial = null;
+        const url = new URL(window.location.href);
+        url.searchParams.delete("producto");
+        window.history.replaceState({}, "", url);
+    }
     estado.tipoSolicitud = estado.tipoInicial;
     estado.productoSeleccionado = estado.productoInicial;
     el.tituloForm.textContent = "Solicitar una evaluación";
@@ -238,7 +245,7 @@ async function enviarFormulario(evento) {
         mostrarMensaje(el.mensajeForm, "error", mensajeError(resultado));
         return;
     }
-    limpiarFormulario();
+    limpiarFormulario({ reiniciarProducto: !editando });
     mostrarMensaje(el.mensajeForm, "exito", editando
         ? "Cambios guardados. El personal coordinará contigo la evaluación."
         : "Solicitud enviada. El personal se pondrá en contacto para coordinar la cita.");
@@ -506,7 +513,7 @@ export async function iniciarVistaCliente() {
 
         estado.usuario = usuario;
         estado.perfil = perfil;
-        pintarUsuario(el.usuario, usuario);
+        pintarUsuario(el.usuario, usuario, perfil);
         mostrarMensaje(el.mensajeGlobal, "", "");
         el.contenido.hidden = false;
 

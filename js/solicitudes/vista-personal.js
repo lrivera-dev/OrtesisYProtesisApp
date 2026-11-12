@@ -373,7 +373,7 @@ export async function iniciarVistaPersonal() {
         }
         estado.usuario = usuario;
         estado.perfil = perfil;
-        pintarUsuario(el.usuario, usuario);
+        pintarUsuario(el.usuario, usuario, perfil);
         mostrarMensaje(el.mensajeGlobal, "", "");
         el.contenido.hidden = false;
         pintarFiltroEstados();

@@ -299,7 +299,7 @@ export async function iniciarGestionProductos() {
         const { usuario, perfil } = await obtenerSesion();
         if (!usuario || perfil?.role !== "personal") return;
 
-        pintarUsuario(el.usuario, usuario);
+        pintarUsuario(el.usuario, usuario, perfil);
         el.contenido.hidden = false;
         el.contenedorForm.hidden = true;
         configurarEventos();
