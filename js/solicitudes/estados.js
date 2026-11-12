@@ -1,5 +1,3 @@
-// Estados sencillos del proceso de coordinación de una evaluación.
-
 export const ESTADOS = Object.freeze({
     PENDIENTE: "Pendiente",
     PROPUESTA_ENVIADA: "Propuesta enviada",
@@ -43,7 +41,9 @@ export function clientePuedeCancelar(estado) {
 }
 
 export function clientePuedeEliminar(estado) {
-    return estado === ESTADOS.PENDIENTE || estado === ESTADOS.CANCELADA;
+    return estado === ESTADOS.PENDIENTE 
+        || estado === ESTADOS.CANCELADA 
+        || estado === ESTADOS.ATENDIDA; 
 }
 
 export function personalPuedeEliminar(estado) {

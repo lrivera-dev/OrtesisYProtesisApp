@@ -1,4 +1,4 @@
-// Interfaz del cliente (mis-solicitudes.html): formulario de solicitud (crear/editar) y "Mis solicitudes".
+
 import { obtenerSesion } from "./sesion.js";
 import {
     obtenerProductosDisponibles,
@@ -73,8 +73,6 @@ function obtenerElementos() {
         lista: document.getElementById("lista-solicitudes")
     };
 }
-
-// ---------- Formulario ----------
 
 function tipoSeleccionado() {
     return estado.tipoSolicitud;
@@ -184,7 +182,6 @@ function limpiarFormulario() {
     actualizarContador();
 }
 
-// Antes de editar se consulta el documento por ID para trabajar con su estado actual.
 async function iniciarEdicion(id) {
     mostrarMensaje(el.mensajeForm, "carga", "Cargando solicitud…");
     const resultado = await obtenerSolicitudPorId(id);
@@ -445,8 +442,6 @@ async function ejecutarAccion(solicitud, accion, boton) {
     await cargarSolicitudes();
 }
 
-// ---------- Inicio ----------
-
 function pintarFiltroEstados() {
     el.filtroEstado.replaceChildren(
         crear("option", { texto: "Todos", atributos: { value: "todos" } }),
@@ -467,7 +462,6 @@ function configurarEventos() {
         if (error) error.textContent = "";
     });
     el.telefono.addEventListener("input", () => {
-        // Solo dígitos; agrega el guion después del cuarto dígito.
         const digitos = el.telefono.value.replace(/\D/g, "").slice(0, 8);
         el.telefono.value = digitos.length > 4 ? `${digitos.slice(0, 4)}-${digitos.slice(4)}` : digitos;
     });
@@ -501,7 +495,6 @@ async function cargarProductos() {
     pintarContextoSolicitud();
 }
 
-// La redirección por sesión/rol la hace protegerPagina() (módulo de auth); aquí solo se carga la vista.
 export async function iniciarVistaCliente() {
     el = obtenerElementos();
     mostrarMensaje(el.mensajeGlobal, "carga", "Cargando tu cuenta…");

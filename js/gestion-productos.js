@@ -31,7 +31,8 @@ const el = {
     nombre: document.getElementById("prod-nombre"),
     categoria: document.getElementById("prod-categoria"),
     descripcion: document.getElementById("prod-descripcion"),
-    imagen: document.getElementById("prod-imagen"),
+    imagen: document.getElementById("prod-imagen"), 
+    imagenUrlExistente: document.getElementById("prod-imagen-url-existente"), 
     disponibilidad: document.getElementById("prod-disponibilidad"),
     busqueda: document.getElementById("busqueda-productos"),
     filtroDisponibilidad: document.getElementById("filtro-disponibilidad")
@@ -52,6 +53,15 @@ const ETIQUETAS = {
 };
 
 let listaProductos = [];
+
+const convertirABase64 = (archivo) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(archivo);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
+};
 
 function crearCelda(texto) {
     const celda = document.createElement("td");
@@ -147,7 +157,8 @@ function prepararEdicion(id) {
     el.nombre.value = producto.nombre ?? "";
     el.categoria.value = producto.categoria ?? "rodillas";
     el.descripcion.value = producto.descripcion ?? "";
-    el.imagen.value = producto.imagen ?? "img/productos/protesis1.png";
+    el.imagen.value = ""; 
+    el.imagenUrlExistente.value = producto.imagen ?? "img/productos/protesis1.png"; 
     el.disponibilidad.value = productoDisponible(producto) ? "true" : "false";
     el.botonGuardar.textContent = "Actualizar producto";
     el.botonCancelar.hidden = false;
@@ -160,7 +171,8 @@ function prepararEdicion(id) {
 function limpiarFormulario() {
     el.form.reset();
     el.id.value = "";
-    el.imagen.value = "img/productos/protesis1.png";
+    el.imagen.value = "";
+    el.imagenUrlExistente.value = "";
     el.botonGuardar.textContent = "Guardar producto";
     el.botonCancelar.hidden = true;
     document.getElementById("titulo-form-producto").textContent = "Agregar producto";
@@ -172,20 +184,32 @@ async function guardarProducto(evento) {
     evento.preventDefault();
     if (!el.form.reportValidity()) return;
 
-    const producto = {
-        nombre: el.nombre.value.trim(),
-        categoria: el.categoria.value,
-        etiqueta: ETIQUETAS[el.categoria.value],
-        descripcion: el.descripcion.value.trim(),
-        imagen: el.imagen.value.trim(),
-        disponibilidad: el.disponibilidad.value === "true",
-        disponible: deleteField(),
-        specs: listaProductos.find((item) => item.id === el.id.value)?.specs ?? ["Consulta con nuestro personal", "Adaptación personalizada"]
-    };
-
     el.botonGuardar.disabled = true;
-    mostrarMensaje(el.mensaje, "carga", "Guardando producto…");
+
     try {
+        let urlImagenFinal = el.imagenUrlExistente.value; 
+        const archivoImagen = el.imagen.files[0];
+
+        if (archivoImagen) {
+            mostrarMensaje(el.mensaje, "carga", "Procesando imagen...");
+            urlImagenFinal = await convertirABase64(archivoImagen);
+        } else if (!urlImagenFinal) {
+            urlImagenFinal = "img/productos/protesis1.png";
+        }
+
+        mostrarMensaje(el.mensaje, "carga", "Guardando producto en base de datos...");
+
+        const producto = {
+            nombre: el.nombre.value.trim(),
+            categoria: el.categoria.value,
+            etiqueta: ETIQUETAS[el.categoria.value],
+            descripcion: el.descripcion.value.trim(),
+            imagen: urlImagenFinal, 
+            disponibilidad: el.disponibilidad.value === "true",
+            disponible: deleteField(),
+            specs: listaProductos.find((item) => item.id === el.id.value)?.specs ?? ["Consulta con nuestro personal", "Adaptación personalizada"]
+        };
+
         const estabaEditando = Boolean(el.id.value);
         if (el.id.value) {
             await updateDoc(doc(db, "productos", el.id.value), producto);
@@ -193,14 +217,15 @@ async function guardarProducto(evento) {
             delete producto.disponible;
             await addDoc(collection(db, "productos"), producto);
         }
+        
         limpiarFormulario();
         await cargarProductos();
         mostrarMensaje(el.mensajeGlobal, "exito", estabaEditando
-            ? "Producto actualizado. El catálogo público ya refleja el cambio."
-            : "Producto agregado al catálogo público.");
+            ? "Producto actualizado con éxito."
+            : "Producto agregado al catálogo con éxito.");
     } catch (error) {
         console.error("Error al guardar el producto:", error);
-        mostrarMensaje(el.mensaje, "error", "No se pudo guardar el producto. Verifica los datos y los permisos de Firestore.");
+        mostrarMensaje(el.mensaje, "error", "No se pudo guardar el producto. La imagen podría ser muy pesada.");
     } finally {
         el.botonGuardar.disabled = false;
     }

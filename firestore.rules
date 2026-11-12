@@ -3,8 +3,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- Funciones compartidas ----------
-
     function autenticado() {
       return request.auth != null;
     }
@@ -13,7 +11,6 @@ service cloud.firestore {
       return /databases/$(database)/documents/usuarios/$(request.auth.uid);
     }
 
-    // El rol se lee del perfil guardado en Firestore (usuarios/{uid}.role), nunca de datos enviados por el cliente.
     function esPersonal() {
       return autenticado()
         && exists(rutaPerfil())
@@ -26,13 +23,9 @@ service cloud.firestore {
         && get(rutaPerfil()).data.role == 'cliente';
     }
 
-    // ---------- Usuarios (módulo de autenticación) ----------
-    // Debe coincidir con lo publicado en la consola: revisar con el módulo de auth antes de desplegar.
-
     match /usuarios/{uid} {
       allow read: if autenticado() && (request.auth.uid == uid || esPersonal());
 
-      // El registro público solo crea perfiles de cliente; "personal" se asigna desde la consola.
       allow create: if autenticado()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['nombre', 'apellido', 'email', 'role', 'createdAt'])
@@ -48,7 +41,6 @@ service cloud.firestore {
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.createdAt == request.time;
 
-      // Solo se permite editar nombres; el rol, correo y fecha de creación quedan protegidos.
       allow update: if autenticado()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['nombre', 'apellido', 'email', 'role', 'createdAt'])
@@ -64,15 +56,10 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ---------- Productos (módulo de catálogo) ----------
-    // El catálogo es público; solo el personal puede administrar sus documentos.
-
     match /productos/{productoId} {
       allow read: if true;
       allow create, update, delete: if esPersonal();
     }
-
-    // ---------- Solicitudes ----------
 
     match /solicitudes/{solicitudId} {
 
@@ -91,7 +78,6 @@ service cloud.firestore {
             || (producto.disponible is bool && producto.disponible == true));
       }
 
-      // Campos que el cliente escribe al crear o editar.
       function productoSolicitable(productoId, productoNombre) {
         let rutaProducto = /databases/$(database)/documents/productos/$(productoId);
         return exists(rutaProducto)
@@ -121,7 +107,6 @@ service cloud.firestore {
           );
       }
 
-      // Flujo de coordinación de citas: estado actual -> estados permitidos para el personal.
       function transicionValida(de, a) {
         let flujo = {
           'Pendiente': ['Propuesta enviada', 'Cita confirmada', 'Cancelada'],
@@ -163,7 +148,6 @@ service cloud.firestore {
           && n.fecha is timestamp;
       }
 
-      // Las notas solo se agregan al final: no se editan ni se borran las anteriores.
       function notasValidas() {
         let antes = resource.data.notas;
         let despues = request.resource.data.notas;
@@ -175,7 +159,6 @@ service cloud.firestore {
         return despues == antes || agregaNota;
       }
 
-      // Cliente: puede editar los datos solo mientras la solicitud siga pendiente.
       function clienteEdita() {
         return esDuenio()
           && resource.data.estado == 'Pendiente'
@@ -185,7 +168,6 @@ service cloud.firestore {
           && camposEditablesValidos(request.resource.data);
       }
 
-      // Cliente: cancela mientras espera coordinación o tiene una cita confirmada.
       function clienteCancela() {
         return esDuenio()
           && resource.data.estado in ['Pendiente', 'Propuesta enviada', 'Cita confirmada']
@@ -217,7 +199,6 @@ service cloud.firestore {
           && cambios().hasOnly(['estado', 'fechaPreferida', 'fechaPropuesta', 'fechaCita', 'actualizadoEn']);
       }
 
-      // Personal: cambia estado siguiendo el flujo y agrega notas; no toca los datos del cliente.
       function personalActualiza() {
         return esPersonal()
           && cambios().hasOnly(['estado', 'notas', 'fechaCita', 'fechaPropuesta', 'actualizadoEn'])
@@ -232,11 +213,9 @@ service cloud.firestore {
           && notasValidas();
       }
 
-      // Lectura: el cliente solo ve las suyas (las consultas deben filtrar por clienteId); el personal ve todas.
       allow read: if esPersonal()
         || (autenticado() && resource.data.clienteId == request.auth.uid);
 
-      // Creación: solo clientes, a su nombre, siempre en estado inicial y sin notas.
       allow create: if esCliente()
         && request.resource.data.keys().hasOnly([
           'clienteId', 'clienteNombre', 'clienteEmail', 'tipo', 'productoId', 'productoNombre',
@@ -264,8 +243,7 @@ service cloud.firestore {
       allow update: if clienteEdita() || clienteCancela() || clienteAceptaPropuesta()
         || clienteProponeOtraFecha() || personalActualiza();
 
-      // Solo se borran solicitudes pendientes o canceladas por su dueño; el personal elimina las canceladas.
-      allow delete: if (esDuenio() && resource.data.estado in ['Pendiente', 'Cancelada'])
+      allow delete: if (esDuenio() && resource.data.estado in ['Pendiente', 'Cancelada', 'Atendida'])
         || (esPersonal() && resource.data.estado == 'Cancelada');
     }
   }

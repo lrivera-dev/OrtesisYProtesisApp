@@ -16,6 +16,8 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+import { getStorage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyDJrG9cSsMGl-hKrO8Wmxixs3N5C8mM-AM",
     authDomain: "ortesisyprotesis.firebaseapp.com",
@@ -29,6 +31,7 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export async function registerUser({ nombre, apellido, email, password }) {
     const credential = await createUserWithEmailAndPassword(

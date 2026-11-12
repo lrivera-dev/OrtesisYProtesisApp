@@ -7,9 +7,7 @@
     <title>Gestión del catálogo | OrtoVida</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/solicitudes.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -34,12 +32,6 @@
     </header>
 
     <main class="sol-main">
-        <section class="sol-hero">
-            <p class="sol-etiqueta"><span aria-hidden="true"></span>Administración del catálogo</p>
-            <h1>Productos</h1>
-            <p>Administra los productos que los clientes pueden consultar antes de solicitar una evaluación.</p>
-        </section>
-
         <div id="mensaje-global" class="mensaje" role="status" aria-live="polite" hidden></div>
 
         <div id="contenido" class="gestion-catalogo" hidden>
@@ -94,8 +86,11 @@
                         <p class="ayuda">Los cambios se reflejan en el catálogo público.</p>
                     </div>
                 </div>
+    
                 <form id="form-producto" novalidate>
                     <input type="hidden" id="prod-id">
+                    <input type="hidden" id="prod-imagen-url-existente"> 
+                    
                     <div class="grid-formulario">
                         <div class="campo">
                             <label for="prod-nombre">Nombre del producto</label>
@@ -114,10 +109,13 @@
                             <label for="prod-descripcion">Descripción</label>
                             <textarea id="prod-descripcion" rows="3" maxlength="500" required></textarea>
                         </div>
+                        
                         <div class="campo">
-                            <label for="prod-imagen">Ruta de imagen</label>
-                            <input type="text" id="prod-imagen" maxlength="300" required value="img/productos/protesis1.png">
+                            <label for="prod-imagen">Subir imagen</label>
+                            <input type="file" id="prod-imagen" accept="image/png, image/jpeg, image/webp">
+                            <small class="ayuda">Si no subes una nueva imagen al editar, se mantendrá la actual.</small>
                         </div>
+
                         <div class="campo">
                             <label for="prod-disponibilidad">Disponibilidad</label>
                             <select id="prod-disponibilidad" required>
